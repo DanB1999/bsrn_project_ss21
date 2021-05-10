@@ -35,7 +35,7 @@ function deleteProcess()	{
 }
 
 function showMemoryUsage()	{
-	echo "$(tput rev)$(tput setaf 7)|									1024 KB									|$(tput sgr0)"
+	echo "$(tput rev)$(tput setaf 7)|									$memory KB									|$(tput sgr0)"
 }
 
 function showInfo()		{
