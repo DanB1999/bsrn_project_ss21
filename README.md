@@ -25,17 +25,11 @@ auszugeben. Sinnvolle Informationen sind u.a.:
 – Grad der externen Fragmentierung
 – Größter/kleinster freier Speicherblock
 – Gesamtzahl belegter/freier Blöcke im Adressraum</li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-
-
+  <br>
+  <li>Kommentare zum Verständnis</li>
+  <li>aussagekräftige und ansehnliche Dokumentation (Umfang:
+8-10 Seiten)</li>
+  <li>Bereiten Sie einen Vortrag mit Präsentationsfolien und eine Live-
+Demonstration (Umfang: 15-20 Minuten) vor. Demonstrieren Sie die Funktionalität
+der Lösung in der Übung.</li>
 </ul>
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
-
-## Running unit tests
