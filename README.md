@@ -1,7 +1,7 @@
 # BsRn Projekt im SS21 - Simulator zur Visualisierung der dynamische Partitionierung
 
 
-## <p style="color: red>Abgabe bis 28.6</p>
+## <h1 style="color: red">Abgabe bis 28.6</h1>
 
 ## Anforderungen
 
