@@ -4,7 +4,7 @@
 
 ## Anforderungen
 <ul>
-  <li>Benutzer sollen die Größe des gesamten Speichers über eine Benutzereingabe
+  <li style="color:green">Benutzer sollen die Größe des gesamten Speichers über eine Benutzereingabe
 (interaktiv) oder per Kommandozeilenargument definieren, also z.B.
 -size 1024</li>
   <li>Benutzer sollen das Realisierungskonzept First Fit, Best Fit, Next Fit oder
