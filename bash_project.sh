@@ -85,7 +85,7 @@ done
 
 #Menü 
 echo
-echo $(tput bold)$(tput setaf 2)$(tput smul)Liste der möglichen Befehle:$(tput sgr0)
+echo $(tput bold)$(tput setaf 2)$(tput smul)der möglichen Befehle:$(tput sgr0)
 echo
 echo -e "Prozess anlegen: \t\t\t$(tput rev)create [Prozessbezeichnung] [Größe in KB]$(tput sgr0)"
 echo -e "Prozess beenden: \t\t\t$(tput rev)delete [Prozessbezeichnung] $(tput sgr0)"
