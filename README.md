@@ -1,9 +1,9 @@
 # BsRn Projekt im SS21 - Simulator zur Visualisierung der dynamische Partitionierung
 
 
-## Anforderungen
+## <p style="color: red>Abgabe bis 28.6</p>
 
-## Code scaffolding
+## Anforderungen
 
 Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
