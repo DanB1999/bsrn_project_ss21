@@ -1,4 +1,10 @@
 #!/bin/bash
+arr=(memArr)
+#memArr[0]="1|01|30"
+arr=(processArr)
+#processArr[0]="00|a|30"
+
+
 function check2expn() {
     local w=0
     local n=$1
@@ -27,14 +33,119 @@ function check2expn() {
 }
 
 function createProcess()	{
-	echo $1 $2
+	if [ $concept = "ff" ]; then
+		firstFit
+	elif [ $concept = "bf" ]; then
+		bestFit $1 $2
+	elif [ $concept = "nf" ]; then
+		nextFit
+	else 
+		echo "FALSE"
+	fi
+		
+		
+		
 }
+function bestFit() {
+	diff=00 #diff bleibt '00' wenn kein ausreichend großer, freier Block gefunden wird 
+	#dursucht Array nach erstem freien Block mit entsprechender Differenz von Block und Prozess
+	for block in ${memArr[*]}
+	do
+		if [ ${block:0:1} -eq 1 ] && [ ${block:5} -ge $2 ]; then 
+			diff=$((${block:5}-$2))
+			blockId=${block:2:2}
+			break
+		fi
+	done
+	sum=0
+	#summiert die Größe aller Prozesse auf 
+	#vergleicht alle Differenzen mit erster Differenz , wenn kleiner, dann wird diese überschrieben
+	for process in ${memArr[*]}
+	do
+		sum=$((sum+${process:5}))
+		free=${process:0:1}
+		
+		if [ ${process:0:1} -eq 1 ] && [ ${process:5} -ge $2 ]; then
+				if [ $((${process:5}-$2)) -lt $diff ]; then
+					diff=$((${process:5}-$2))
+					blockId=${process:2:2}
+				fi		
+		else
+			continue 
+		fi 				
+	done
+	echo beste Differenz: $diff im Block $blockId
+	if [ $diff -ne "00" ]; then
+		splitBlock $blockId $2 $1
+		showMemoryUsage
+	else
+		if [ $(($memory-$sum)) -ge $2 ]; then
+			num=${#memArr[*]}
+			memArr[$num]="0|$1|$2"
+			echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
+			showMemoryUsage
+		else 
+			echo "Fehler: nicht genügend Speicher vorhanden, Prozesse löschen"
+		fi
+	fi
+	
+}
+
 
 function deleteProcess()	{
-	echo $1
+	for index in ${!memArr[*]}
+	do
+		 if [ ${memArr[$index]:2:2} -eq $1 ]; then
+			
+			 memArr[$index]="1|$1|${memArr[$index]:5}"
+			 echo $(tput rev)$(tput setaf 2)Deleted!$(tput sgr0)
+			 showMemoryUsage
+			
+		 fi
+		
+	done
+	
 }
 
+#belegt freien Block mit Prozess
+function splitBlock()	{
+	for index in ${!memArr[*]}
+	do
+		if [ ${memArr[$index]:2:2} -eq $1 ]; then
+			counter=${#memArr[*]}
+			for index2 in ${!memArr[*]}
+			do
+				if [ $index2 -gt $index ] && [ $counter -ne $(($index+1)) ]; then
+					memArr[$counter]=${memArr[$(($counter-1))]}
+					counter=$(($counter-1))
+				fi
+				
+			done
+		fi
+	done
+	
+	for index3 in ${!memArr[*]}
+	do
+		if [ ${memArr[$index3]:2:2} -eq $1 ]; then
+			diffr=$((${memArr[$index3]:5}-$2))
+			memArr[$(($index3+1))]="1|$1|$diffr"
+			memArr[$index3]="0|$3|$2"
+			break
+		fi
+			
+	done
+}
+
+
 function showMemoryUsage()	{
+	sum=0
+	for index in ${!memArr[*]}
+	do			
+		echo $index ${memArr[$index]}
+		sum=$(($sum+${memArr[$index]:5}))
+	done
+	echo $(($memory-$sum)) KB verbleibend
+	
 	echo "$(tput rev)$(tput setaf 7)|									$memory KB									|$(tput sgr0)"
 }
 
@@ -68,6 +179,7 @@ options="First_Fit Best_Fit Next_Fit Random"
 select option in $options; do
 	if [ "$option" = "First_Fit" ]; then
 		concept="ff"
+		createProcess
 		break
 	elif [ "$option" = "Best_Fit" ]; then
 		concept="bf"
@@ -99,12 +211,9 @@ while [ $i -eq 0 ]; do
 	if [ $command = "create" ]; then
 		createProcess $name $size
 		echo 
-		echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
-		showMemoryUsage
 	elif [ $command = "delete" ]; then
+		deleteProcess $name $size
 		echo 
-		echo $(tput rev)$(tput setaf 2)Deleted!$(tput sgr0)
-		showMemoryUsage
 	elif [ $command = "info" ]; then
 		echo
 		showInfo
