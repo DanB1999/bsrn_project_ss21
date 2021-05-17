@@ -177,13 +177,16 @@ echo $(tput bold)$(tput setaf 2)$(tput smul)Wählen Sie ein Realisierungskozept 
 echo
 options="First_Fit Best_Fit Next_Fit Random"
 select option in $options; do
+	# Suche beginnend mit Speicheranfang bis ausreichend großer Block gefunden
 	if [ "$option" = "First_Fit" ]; then
 		concept="ff"
 		createProcess
 		break
+	# sucht ab dem Anfang des Speicheradressraums Suche kleinsten Block, der ausreicht
 	elif [ "$option" = "Best_Fit" ]; then
 		concept="bf"
 		break
+	# Suche beginnend mit der Stelle der letzten Speicherzuweisung
 	elif [ "$option" = "Next_Fit" ]; then
 		concept="nf"
 		break
