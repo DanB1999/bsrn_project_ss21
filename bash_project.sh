@@ -107,7 +107,7 @@ function deleteProcess()	{
 	
 }
 
-#belegt freien Block mit Prozess
+#belegt freien Block mit Prozess: Übergabeparameter: $BlockId $Prozessgröße $ProzessId
 function splitBlock()	{
 	for index in ${!memArr[*]}
 	do
