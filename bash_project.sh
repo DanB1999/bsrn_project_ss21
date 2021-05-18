@@ -32,7 +32,7 @@ function createProcess()	{
 	elif [ $concept = "bf" ]; then
 		bestFit $1 $2
 	elif [ $concept = "nf" ]; then
-		nextFit
+		nextFit $1 $2
 	else 
 		echo "FALSE"
 	fi
@@ -40,6 +40,19 @@ function createProcess()	{
 		
 		
 		
+}
+function showProcesses {
+	echo "prozesse: "
+	for process in ${processArr[*]}
+	do
+		echo "$process"
+	done
+}
+function nextFit() {
+	processArr+=( "0|00|$1|$2" )
+	
+	showProcesses
+
 }
 function bestFit() {
 	diff=0 #diff bleibt '00' wenn kein ausreichend großer, freier Block gefunden wird 
@@ -133,6 +146,7 @@ function showMemoryUsage()	{
 }
 
 function showInfo()		{
+	# 100/1024 = ca. 10%
 	echo Grad der externen Fragmentierung:
 	echo Größter/Kleinster freier Speicherblock: 
 	echo Gesamtzahl belegter/freier Blöcke im Adressraum:
@@ -148,7 +162,7 @@ read memory
 check2expn $memory
 while (($check != 0)); do
     echo "$(tput bold)$(tput setaf 1)Speicher ist keine 2er Potenz$(tput sgr0)"
-    echo "$(tput bold)$(tput setaf 2)Geben Sie den gewünschten Speicher ein:\n(in KB; Die Größe muss eine Zweierpotenz sein)$(tput sgr0)"
+    echo -e "$(tput bold)$(tput setaf 2)Geben Sie den gewünschten Speicher ein:\n(in KB; Die Größe muss eine Zweierpotenz sein)$(tput sgr0)"
     read memory
     check2expn $memory
 done
