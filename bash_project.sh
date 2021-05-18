@@ -88,6 +88,53 @@ function bestFit() {
 	
 	
 }
+function putTogetherFreeBlocks()	{
+	zaehler1=0
+	zaehler2=0
+	sum=0
+	for index in ${!memArr[*]}
+	do
+		 if [ ${memArr[$index]:2:2} -eq $1 ] && [ ${memArr[$index]:0:1} -eq 1 ]; then
+			 if [ ${memArr[$(($index-1))]:0:1} -eq 1 ]; then
+				 if [ ${memArr[$(($index+1))]:0:1} -eq 1 ]; then
+					 zaehler1=$index
+					 sum=$((${memArr[$(($index-1))]:5}+${memArr[$index]:5}+${memArr[$(($index+1))]:5}))
+					 memArr[$(($index-1))]="1|$1|$sum"
+					 
+				 else 
+					 zaehler2=$index
+					 sum=$((${memArr[$(($index-1))]:5}+${memArr[$(($index))]:5}))
+					 echo $sum
+					 echo $zaehler2
+					 memArr[$(($index-1))]="1|$1|$sum"					 
+				 fi
+			 elif [ ${memArr[$(($index+1))]:0:1} -eq 1 ] && [ ${memArr[$(($index-1))]:0:1} -ne 1 ]; then
+				 zaehler2=$(($index+1))
+				 sum=$((${memArr[$index]:5}+${memArr[$(($index+1))]:5}))
+				 memArr[$index]="1|$1|$sum"
+			 fi
+			
+		 fi
+		 if [ $zaehler1 -ne 0 ] && [ $zaehler1 -lt $((${#memArr[*]}-2)) ]; then 
+			 memArr[$zaehler1]=${memArr[$(($zaehler1+2))]}
+			 zaehler1=$(($zaehler1+1))
+		 elif [ $zaehler2 -ne 0 ] && [ $zaehler2 -lt $((${#memArr[*]}-1)) ]; then
+			 memArr[$zaehler2]=${memArr[$(($zaehler2+1))]}
+			 zaehler2=$(($zaehler2+1))
+		 else
+			 continue
+		 fi
+		
+	done
+	if [ $zaehler1 -ne 0 ];then
+		unset 'memArr[$((${#memArr[*]}-2)]'
+		unset 'memArr[$((${#memArr[*]}-1)]'
+	elif [ $zaehler2 -ne "0" ];then
+		unset 'memArr[$((${#memArr[*]}-1))]'
+	fi
+		
+
+}
 
 
 function deleteProcess()	{
@@ -96,40 +143,45 @@ function deleteProcess()	{
 		 if [ ${memArr[$index]:2:2} -eq $1 ]; then
 			
 			 memArr[$index]="1|$1|${memArr[$index]:5}"
-			 echo $(tput rev)$(tput setaf 2)Deleted!$(tput sgr0)
-			 showMemoryUsage
-			
+			 echo $(tput rev)$(tput setaf 2)Deleted!$(tput sgr0)			
 		 fi
 		
 	done
-	
+	putTogetherFreeBlocks $1
+	showMemoryUsage
 }
 
 #belegt freien Block mit Prozess: Übergabeparameter: $BlockId $Prozessgröße $neue BlockId
 function splitBlock()	{
+	counter=0
 	for index in ${!memArr[*]}
 	do
 		if [ ${memArr[$index]:2:2} -eq $1 ]; then
-			counter=${#memArr[*]}
-			echo $counter
-			for index2 in ${!memArr[*]}
-			do
-				if [ $index2 -gt $index ] && [ $counter -ne $(($index+1)) ]; then
-					memArr[$counter]=${memArr[$(($counter-1))]}
-					counter=$(($counter-1))
-				fi
+			if [ ${memArr[$index]:5} -ne $2 ]; then
+				counter=${#memArr[*]}
+				for index2 in ${!memArr[*]}
+				do
+					if [ $index2 -gt $index ] && [ $counter -ne $(($index+1)) ]; then
+						memArr[$counter]=${memArr[$(($counter-1))]}
+						counter=$(($counter-1))
+					fi
 				
-			done
+				done
+			else
+				memArr[$index]="0|$1|$2"
+			fi
+				
 		fi
 	done
 	
 	for index3 in ${!memArr[*]}
 	do
-		if [ ${memArr[$index3]:2:2} -eq $1 ]; then
+		if [ ${memArr[$index3]:2:2} -eq $1 ] && [ $counter -ne 0 ]; then
 			diffr=$((${memArr[$index3]:5}-$2))
 			memArr[$(($index3+1))]="1|$1|$diffr"
 			memArr[$index3]="0|$3|$2"
 			break
+			
 		fi
 			
 	done
