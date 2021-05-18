@@ -88,6 +88,7 @@ function bestFit() {
 	
 	
 }
+#guckt, ob vor oder hinter betreffendem freien Block noch freie Blöcke liegen, wenn ja, verbindet er sie 
 function putTogetherFreeBlocks()	{
 	zaehler1=0
 	zaehler2=0
