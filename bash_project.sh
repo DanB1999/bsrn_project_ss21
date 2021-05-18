@@ -127,8 +127,8 @@ function putTogetherFreeBlocks()	{
 		
 	done
 	if [ $zaehler1 -ne 0 ];then
-		unset 'memArr[$((${#memArr[*]}-2)]'
-		unset 'memArr[$((${#memArr[*]}-1)]'
+		unset 'memArr[$((${#memArr[*]}-1))]'
+		unset 'memArr[$((${#memArr[*]}-1))]'
 	elif [ $zaehler2 -ne "0" ];then
 		unset 'memArr[$((${#memArr[*]}-1))]'
 	fi
