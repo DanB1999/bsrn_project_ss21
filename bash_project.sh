@@ -1,10 +1,4 @@
 #!/bin/bash
-arr=(memArr)
-#memArr[0]="1|01|30"
-arr=(processArr)
-#processArr[0]="00|a|30"
-
-
 function check2expn() {
     local w=0
     local n=$1
@@ -79,14 +73,7 @@ function bestFit() {
 		splitBlock $blockId $2 $1
 		showMemoryUsage
 	else
-		if [ $(($memory-$sum)) -ge $2 ]; then
-			num=${#memArr[*]}
-			memArr[$num]="0|$1|$2"
-			echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
-			showMemoryUsage
-		else 
-			echo "Fehler: nicht genügend Speicher vorhanden, Prozesse löschen"
-		fi
+		splitBlock 00 $2 $1
 	fi
 	
 }
@@ -107,12 +94,13 @@ function deleteProcess()	{
 	
 }
 
-#belegt freien Block mit Prozess
+#belegt freien Block mit Prozess: Übergabeparameter: $BlockId $Prozessgröße $ProzessId
 function splitBlock()	{
 	for index in ${!memArr[*]}
 	do
 		if [ ${memArr[$index]:2:2} -eq $1 ]; then
 			counter=${#memArr[*]}
+			echo $counter
 			for index2 in ${!memArr[*]}
 			do
 				if [ $index2 -gt $index ] && [ $counter -ne $(($index+1)) ]; then
@@ -138,13 +126,10 @@ function splitBlock()	{
 
 
 function showMemoryUsage()	{
-	sum=0
 	for index in ${!memArr[*]}
 	do			
 		echo $index ${memArr[$index]}
-		sum=$(($sum+${memArr[$index]:5}))
 	done
-	echo $(($memory-$sum)) KB verbleibend
 	
 	echo "$(tput rev)$(tput setaf 7)|									$memory KB									|$(tput sgr0)"
 }
@@ -170,6 +155,12 @@ while (($check != 0)); do
     check2expn $memory
 done
 echo Sie haben $memory KB reserviert
+arr=(memArr)
+memArr[0]="1|00|$memory"	
+	#1-frei 0-belegt		BlockId	
+arr=(processArr)
+#processArr[0]="00|a|
+
 
 #Auswahl der Realisierungskonzepte
 echo
