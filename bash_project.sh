@@ -36,12 +36,13 @@ function createProcess()	{
 	else 
 		echo "FALSE"
 	fi
+	
 		
 		
 		
 }
 function bestFit() {
-	diff=00 #diff bleibt '00' wenn kein ausreichend großer, freier Block gefunden wird 
+	diff=0 #diff bleibt '00' wenn kein ausreichend großer, freier Block gefunden wird 
 	#dursucht Array nach erstem freien Block mit entsprechender Differenz von Block und Prozess
 	for block in ${memArr[*]}
 	do
@@ -56,7 +57,7 @@ function bestFit() {
 	#vergleicht alle Differenzen mit erster Differenz , wenn kleiner, dann wird diese überschrieben
 	for process in ${memArr[*]}
 	do
-		sum=$((sum+${process:5}))
+		sum=$(($sum+${process:5}))
 		free=${process:0:1}
 		
 		if [ ${process:0:1} -eq 1 ] && [ ${process:5} -ge $2 ]; then
@@ -69,12 +70,9 @@ function bestFit() {
 		fi 				
 	done
 	echo beste Differenz: $diff im Block $blockId
-	if [ $diff -ne "00" ]; then
 		splitBlock $blockId $2 $1
 		showMemoryUsage
-	else
-		splitBlock 00 $2 $1
-	fi
+	
 	
 }
 
@@ -94,7 +92,7 @@ function deleteProcess()	{
 	
 }
 
-#belegt freien Block mit Prozess: Übergabeparameter: $BlockId $Prozessgröße $ProzessId
+#belegt freien Block mit Prozess: Übergabeparameter: $BlockId $Prozessgröße $neue BlockId
 function splitBlock()	{
 	for index in ${!memArr[*]}
 	do
