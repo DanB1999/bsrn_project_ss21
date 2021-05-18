@@ -1,10 +1,21 @@
 array speicherblöcke POedro
 Index Memory
-0       frei/nicht frei0||prozessid0||Speicher0000
+0       frei/nicht frei0||blockid00||Speicher0000
+
+
+
 
 array prozesse Pedro
 Index prozess
-0       0prozessID || prozessname
+0       0|00|0000000000|0000000000
+   von stelle 0 bis 1 = busy bit
+   von stelle 2-3 = block id
+   von stelle 4-13 = prozessname
+   von stelle 14-23 = prozessgröße
+
+
+
+
 
 funktion freien block suchen in array Daniel
 
