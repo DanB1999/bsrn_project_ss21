@@ -82,7 +82,7 @@ function bestFit() {
 			continue 
 		fi 				
 	done
-	echo beste Differenz: $diff im Block $blockId
+	#echo beste Differenz: $diff im Block $blockId
 		splitBlock $blockId $2 $1
 		showMemoryUsage
 	
@@ -156,22 +156,28 @@ function splitBlock()	{
 	counter=0
 	for index in ${!memArr[*]}
 	do
-		if [ ${memArr[$index]:2:2} -eq $1 ]; then
-			if [ ${memArr[$index]:5} -ne $2 ]; then
-				counter=${#memArr[*]}
-				for index2 in ${!memArr[*]}
-				do
-					if [ $index2 -gt $index ] && [ $counter -ne $(($index+1)) ]; then
-						memArr[$counter]=${memArr[$(($counter-1))]}
-						counter=$(($counter-1))
-					fi
+		if [ $2 -le $memory ]; then
+			if [ ${memArr[$index]:2:2} -eq $1 ]; then
+				if [ ${memArr[$index]:5} -ne $2 ]; then
+					counter=${#memArr[*]}
+					for index2 in ${!memArr[*]}
+					do
+						if [ $index2 -gt $index ] && [ $counter -ne $(($index+1)) ]; then
+							memArr[$counter]=${memArr[$(($counter-1))]}
+							counter=$(($counter-1))
+						fi
 				
-				done
+					done
+				else
+					memArr[$index]="0|$1|$2"
+				fi
 			else
-				memArr[$index]="0|$1|$2"
+				continue
 			fi
-				
-		fi
+		else
+			echo "$(tput bold)$(tput setaf 1)Fehler: Kein ausreichend großer freier Block vorhanden!$(tput sgr0)"
+		fi		
+			
 	done
 	
 	for index3 in ${!memArr[*]}
@@ -180,13 +186,14 @@ function splitBlock()	{
 			diffr=$((${memArr[$index3]:5}-$2))
 			memArr[$(($index3+1))]="1|$1|$diffr"
 			memArr[$index3]="0|$3|$2"
+			echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
 			break
-			
+		else
+			continue	
 		fi
 			
 	done
 }
-
 
 function showMemoryUsage()	{
 	for index in ${!memArr[*]}
