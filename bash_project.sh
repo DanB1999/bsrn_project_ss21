@@ -105,8 +105,6 @@ function putTogetherFreeBlocks()	{
 				 else 
 					 zaehler2=$index
 					 sum=$((${memArr[$(($index-1))]:5}+${memArr[$(($index))]:5}))
-					 echo $sum
-					 echo $zaehler2
 					 memArr[$(($index-1))]="1|$1|$sum"					 
 				 fi
 			 elif [ ${memArr[$(($index+1))]:0:1} -eq 1 ] && [ ${memArr[$(($index-1))]:0:1} -ne 1 ]; then
@@ -157,28 +155,25 @@ function splitBlock()	{
 	counter=0
 	for index in ${!memArr[*]}
 	do
-		if [ $2 -le $memory ]; then
-			if [ ${memArr[$index]:2:2} -eq $1 ]; then
-				if [ ${memArr[$index]:5} -ne $2 ]; then
-					counter=${#memArr[*]}
-					for index2 in ${!memArr[*]}
-					do
-						if [ $index2 -gt $index ] && [ $counter -ne $(($index+1)) ]; then
-							memArr[$counter]=${memArr[$(($counter-1))]}
-							counter=$(($counter-1))
-						fi
+		if [ ${memArr[$index]:2:2} -eq $1 ]; then
+			if [ ${memArr[$index]:5} -gt $2 ]; then
+				counter=${#memArr[*]}
+				for index2 in ${!memArr[*]}
+				do
+					if [ $index2 -gt $index ] && [ $counter -ne $(($index+1)) ]; then
+						memArr[$counter]=${memArr[$(($counter-1))]}
+						counter=$(($counter-1))
+					fi
 				
-					done
-				else
-					memArr[$index]="0|$1|$2"
-				fi
+				done
+			elif [ ${memArr[$index]:5} -eq $2 ]; then
+				memArr[$index]="0|$1|$2"
 			else
-				continue
+				echo "$(tput bold)$(tput setaf 1)Fehler: Kein ausreichend großer freier Block vorhanden!$(tput sgr0)"
 			fi
 		else
-			echo "$(tput bold)$(tput setaf 1)Fehler: Kein ausreichend großer freier Block vorhanden!$(tput sgr0)"
-		fi		
-			
+			continue
+		fi	
 	done
 	
 	for index3 in ${!memArr[*]}
