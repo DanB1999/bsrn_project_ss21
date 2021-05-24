@@ -104,7 +104,6 @@ function putTogetherFreeBlocks()	{
 				 	if [ ${memArr[$(($index+1))]:0:1} -eq 1 ]; then
 					 	zaehler1=$index
 					 	sum=$((${memArr[$(($index-1))]:5}+${memArr[$index]:5}+${memArr[$(($index+1))]:5}))
-						echo hallo $sum
 					 	memArr[$(($index-1))]="1|$1|$sum"
 					 
 				 	else 
@@ -146,9 +145,11 @@ function putTogetherFreeBlocks()	{
 
 
 function deleteProcess()	{
+	counter5=0
 	for process in ${!processArr[*]}
 	do
 		if [[ "${processArr[$process]:3}" == "$1" ]]; then
+			counter5=$process
 			for block in ${!memArr[*]}
 			do
 				if [ ${processArr[$process]:0:2} -eq ${memArr[$block]:2:2} ]; then
@@ -158,9 +159,14 @@ function deleteProcess()	{
 					putTogetherFreeBlocks ${memArr[$block]:2:2}
 					break
 				fi
-			done			 	 
-		fi	
+			done	 	 
+		fi
+		if [ $counter5 -ne 0 ] && [ $counter5 -lt ${#processArr[*]} ]; then
+			processArr[$counter5]=${processArr[$(($counter5+1))]}
+			counter5=$(($counter5+1))
+		fi
 	done
+	unset 'processArr[$((${#processArr[*]}-1))]'
 	showMemoryUsage
 }
 
@@ -215,6 +221,7 @@ function showMemoryUsage()	{
 				if [ ${memArr[$block]:2:2} -eq ${processArr[$process]:0:2} ]; then 
 					echo -e "belegt:\t${processArr[$process]:3}\t${memArr[$block]:5} KB" 
 				fi
+				#echo ${processArr[$process]}
 				
 			done
 		else
