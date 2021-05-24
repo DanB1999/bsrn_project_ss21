@@ -83,8 +83,10 @@ function bestFit() {
 		fi 				
 	done
 	#echo beste Differenz: $diff im Block $blockId
-		splitBlock $blockId $2 $1
-		showMemoryUsage
+	blockCounter=$(($blockCounter-1))
+	splitBlock $blockId $2 $blockCounter 
+	processArr[${#processArr[*]}]="$blockCounter|$1"
+	showMemoryUsage
 	
 	
 }
@@ -95,40 +97,47 @@ function putTogetherFreeBlocks()	{
 	sum=0
 	for index in ${!memArr[*]}
 	do
-		 if [ ${memArr[$index]:2:2} -eq $1 ] && [ ${memArr[$index]:0:1} -eq 1 ]; then
-			 if [ ${memArr[$(($index-1))]:0:1} -eq 1 ]; then
-				 if [ ${memArr[$(($index+1))]:0:1} -eq 1 ]; then
-					 zaehler1=$index
-					 sum=$((${memArr[$(($index-1))]:5}+${memArr[$index]:5}+${memArr[$(($index+1))]:5}))
-					 memArr[$(($index-1))]="1|$1|$sum"
-					 
-				 else 
-					 zaehler2=$index
-					 sum=$((${memArr[$(($index-1))]:5}+${memArr[$(($index))]:5}))
-					 memArr[$(($index-1))]="1|$1|$sum"					 
-				 fi
-			 elif [ ${memArr[$(($index+1))]:0:1} -eq 1 ] && [ ${memArr[$(($index-1))]:0:1} -ne 1 ]; then
-				 zaehler2=$(($index+1))
-				 sum=$((${memArr[$index]:5}+${memArr[$(($index+1))]:5}))
-				 memArr[$index]="1|$1|$sum"
-			 fi
-			
-		 fi
-		 if [ $zaehler1 -ne 0 ] && [ $zaehler1 -lt $((${#memArr[*]}-2)) ]; then 
-			 memArr[$zaehler1]=${memArr[$(($zaehler1+2))]}
-			 zaehler1=$(($zaehler1+1))
-		 elif [ $zaehler2 -ne 0 ] && [ $zaehler2 -lt $((${#memArr[*]}-1)) ]; then
-			 memArr[$zaehler2]=${memArr[$(($zaehler2+1))]}
-			 zaehler2=$(($zaehler2+1))
-		 else
-			 continue
-		 fi
 		
+		 if [ ${memArr[$index]:2:2} -eq $1 ] && [ ${memArr[$index]:0:1} -eq 1 ]; then
+	 		if [ $index -gt 0 ]; then 
+			 	if [ ${memArr[$(($index-1))]:0:1} -eq 1 ]; then
+				 	if [ ${memArr[$(($index+1))]:0:1} -eq 1 ]; then
+					 	zaehler1=$index
+					 	sum=$((${memArr[$(($index-1))]:5}+${memArr[$index]:5}+${memArr[$(($index+1))]:5}))
+						echo hallo $sum
+					 	memArr[$(($index-1))]="1|$1|$sum"
+					 
+				 	else 
+					 	zaehler2=$index
+					 	sum=$((${memArr[$(($index-1))]:5}+${memArr[$(($index))]:5}))
+					 	memArr[$(($index-1))]="1|$1|$sum"					 
+				 	fi
+			 	elif [ ${memArr[$(($index+1))]:0:1} -eq 1 ] && [ ${memArr[$(($index-1))]:0:1} -ne 1 ]; then
+				 	zaehler2=$(($index+1))
+				 	sum=$((${memArr[$index]:5}+${memArr[$(($index+1))]:5}))
+				 	memArr[$index]="1|$1|$sum"
+			 	fi
+		 	elif [ ${memArr[$(($index+1))]:0:1} -eq 1 ]; then
+			 	zaehler2=$(($index+1))
+			 	sum=$((${memArr[$index]:5}+${memArr[$(($index+1))]:5}))
+			 	memArr[$index]="1|$1|$sum"
+			fi
+		fi
+	 	
+		if [ $zaehler1 -ne 0 ] && [ $zaehler1 -lt $((${#memArr[*]}-2)) ]; then 
+			memArr[$zaehler1]=${memArr[$(($zaehler1+2))]}
+			zaehler1=$(($zaehler1+1))
+		elif [ $zaehler2 -ne 0 ] && [ $zaehler2 -lt $((${#memArr[*]}-1)) ]; then
+			memArr[$zaehler2]=${memArr[$(($zaehler2+1))]}
+			zaehler2=$(($zaehler2+1))
+		else
+			continue
+		fi
 	done
 	if [ $zaehler1 -ne 0 ];then
 		unset 'memArr[$((${#memArr[*]}-1))]'
 		unset 'memArr[$((${#memArr[*]}-1))]'
-	elif [ $zaehler2 -ne "0" ];then
+	elif [ $zaehler2 -ne 0 ];then
 		unset 'memArr[$((${#memArr[*]}-1))]'
 	fi
 		
@@ -137,16 +146,21 @@ function putTogetherFreeBlocks()	{
 
 
 function deleteProcess()	{
-	for index in ${!memArr[*]}
+	for process in ${!processArr[*]}
 	do
-		 if [ ${memArr[$index]:2:2} -eq $1 ]; then
-			
-			 memArr[$index]="1|$1|${memArr[$index]:5}"
-			 echo $(tput rev)$(tput setaf 2)Deleted!$(tput sgr0)			
-		 fi
-		
+		if [[ "${processArr[$process]:3}" == "$1" ]]; then
+			for block in ${!memArr[*]}
+			do
+				if [ ${processArr[$process]:0:2} -eq ${memArr[$block]:2:2} ]; then
+					unset 'processArr[$process]'
+					memArr[$block]="1|${memArr[$block]:2:2}|${memArr[$block]:5}"
+					echo $(tput rev)$(tput setaf 2)Deleted!$(tput sgr0)	
+					putTogetherFreeBlocks ${memArr[$block]:2:2}
+					break
+				fi
+			done			 	 
+		fi	
 	done
-	putTogetherFreeBlocks $1
 	showMemoryUsage
 }
 
@@ -181,6 +195,7 @@ function splitBlock()	{
 		if [ ${memArr[$index3]:2:2} -eq $1 ] && [ $counter -ne 0 ]; then
 			diffr=$((${memArr[$index3]:5}-$2))
 			memArr[$(($index3+1))]="1|$1|$diffr"
+			#putTogetherFreeBlocks ${memArr[$(($index3+1))]}
 			memArr[$index3]="0|$3|$2"
 			echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
 			break
@@ -192,9 +207,20 @@ function splitBlock()	{
 }
 
 function showMemoryUsage()	{
-	for index in ${!memArr[*]}
-	do			
-		echo $index ${memArr[$index]}
+	for block in ${!memArr[*]}
+	do
+		if [ ${memArr[$block]:0:1} -eq 0 ]; then
+			for process in ${!processArr[*]}
+			do
+				if [ ${memArr[$block]:2:2} -eq ${processArr[$process]:0:2} ]; then 
+					echo -e "belegt:\t${processArr[$process]:3}\t${memArr[$block]:5} KB" 
+				fi
+				
+			done
+		else
+			echo -e "frei:\t---\t${memArr[$block]:5} KB"	 
+		fi
+		#echo $block ${memArr[$block]}
 	done
 	
 	echo "$(tput rev)$(tput setaf 7)|									$memory KB									|$(tput sgr0)"
@@ -222,17 +248,19 @@ while (($check != 0)); do
     check2expn $memory
 done
 echo Sie haben $memory KB reserviert
+#legt die Id für neue Blöcke fest, wird runtergezählt, wenn neuer Block erstellt 
+blockCounter=99
 arr=(memArr)
 memArr[0]="1|00|$memory"	
 	#1-frei 0-belegt		BlockId	
 arr=(processArr)
-#processArr[0]="00|a|
+#processArr[0]="00|a"
 
 
 #Auswahl der Realisierungskonzepte
 echo
 echo $(tput bold)$(tput setaf 2)$(tput smul)Wählen Sie ein Realisierungskozept aus:$(tput sgr0)
-echo
+echo 
 options="First_Fit Best_Fit Next_Fit Random"
 select option in $options; do
 	# Suche beginnend mit Speicheranfang bis ausreichend großer Block gefunden
