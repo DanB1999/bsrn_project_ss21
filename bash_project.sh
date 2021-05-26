@@ -55,7 +55,7 @@ function nextFit() {
 
 }
 function bestFit() {
-	diff=0 #diff bleibt '00' wenn kein ausreichend großer, freier Block gefunden wird 
+	diff=-1 #diff bleibt '-1' wenn kein ausreichend großer, freier Block gefunden wird 
 	#dursucht Array nach erstem freien Block mit entsprechender Differenz von Block und Prozess
 	for block in ${memArr[*]}
 	do
@@ -82,13 +82,21 @@ function bestFit() {
 			continue 
 		fi 				
 	done
-	#echo beste Differenz: $diff im Block $blockId
 	blockCounter=$(($blockCounter-1))
-	splitBlock $blockId $2 $blockCounter 
-	processArr[${#processArr[*]}]="$blockCounter|$1"
-	showMemoryUsage
 	
-	
+	#wenn die Blockgröße gleich der Prozessgröße ist, wird dessen Id dem Prozess zugeordnet
+	#ansonsten absteigender Wert von 99
+	if [ $diff -gt 0 ]; then
+		if [ $diff -eq 0 ]; then 
+			processArr[${#processArr[*]}]="$blockId|$1"
+		elif [ $diff -gt 0 ]; then 
+			processArr[${#processArr[*]}]="$blockCounter|$1"
+		fi
+		splitBlock $blockId $2 $blockCounter 
+		showMemoryUsage
+	else
+		echo "$(tput bold)$(tput setaf 1)Fehler: Kein ausreichend großer freier Block vorhanden!$(tput sgr0)"	
+	fi			
 }
 #guckt, ob vor oder hinter betreffendem freien Block noch freie Blöcke liegen, wenn ja, verbindet er sie 
 function putTogetherFreeBlocks()	{
@@ -145,7 +153,7 @@ function putTogetherFreeBlocks()	{
 
 
 function deleteProcess()	{
-	counter5=0
+	counter5=-1
 	for process in ${!processArr[*]}
 	do
 		if [[ "${processArr[$process]:3}" == "$1" ]]; then
@@ -153,15 +161,15 @@ function deleteProcess()	{
 			for block in ${!memArr[*]}
 			do
 				if [ ${processArr[$process]:0:2} -eq ${memArr[$block]:2:2} ]; then
-					unset 'processArr[$process]'
+					unset 'processArr[$counter5]'
 					memArr[$block]="1|${memArr[$block]:2:2}|${memArr[$block]:5}"
 					echo $(tput rev)$(tput setaf 2)Deleted!$(tput sgr0)	
 					putTogetherFreeBlocks ${memArr[$block]:2:2}
 					break
 				fi
-			done	 	 
+			done 	 
 		fi
-		if [ $counter5 -ne 0 ] && [ $counter5 -lt ${#processArr[*]} ]; then
+		if [ $counter5 -ne -1 ] && [ $counter5 -lt ${#processArr[*]} ]; then
 			processArr[$counter5]=${processArr[$(($counter5+1))]}
 			counter5=$(($counter5+1))
 		fi
@@ -227,7 +235,12 @@ function showMemoryUsage()	{
 		else
 			echo -e "frei:\t---\t${memArr[$block]:5} KB"	 
 		fi
-		#echo $block ${memArr[$block]}
+		echo $block ${memArr[$block]}
+	done
+	for process in ${!processArr[*]}
+	do
+		echo $process ${processArr[$process]}
+		
 	done
 	
 	echo "$(tput rev)$(tput setaf 7)|									$memory KB									|$(tput sgr0)"
