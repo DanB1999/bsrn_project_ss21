@@ -54,6 +54,7 @@ function nextFit() {
 	showProcesses
 
 }
+#findet den freien Block mit der geringsten Speicher-Differenz zum Prozess
 function bestFit() {
 	diff=-1 #diff bleibt '-1' wenn kein ausreichend großer, freier Block gefunden wird 
 	#dursucht Array nach erstem freien Block mit entsprechender Differenz von Block und Prozess
@@ -98,6 +99,7 @@ function bestFit() {
 		echo "$(tput bold)$(tput setaf 1)Fehler: Kein ausreichend großer freier Block vorhanden!$(tput sgr0)"	
 	fi			
 }
+
 #guckt, ob vor oder hinter betreffendem freien Block noch freie Blöcke liegen, wenn ja, verbindet er sie 
 function putTogetherFreeBlocks()	{
 	zaehler1=0
@@ -151,7 +153,7 @@ function putTogetherFreeBlocks()	{
 
 }
 
-
+#löscht Eintrag aus Prozess-Array, setzt entspr. Block auf FREI
 function deleteProcess()	{
 	counter5=-1
 	for process in ${!processArr[*]}
@@ -220,6 +222,7 @@ function splitBlock()	{
 	done
 }
 
+#verknüpft Block-Array mit Prozess-Array und gibt belegte/freie Blöcke aus 
 function showMemoryUsage()	{
 	for block in ${!memArr[*]}
 	do
@@ -268,13 +271,19 @@ while (($check != 0)); do
     check2expn $memory
 done
 echo Sie haben $memory KB reserviert
+
 #legt die Id für neue Blöcke fest, wird runtergezählt, wenn neuer Block erstellt 
 blockCounter=99
+
+#Array für Speicherblöcke
 arr=(memArr)
+#erster "Block" repräsentiert gesamten freien Speicher zu Beginn 
 memArr[0]="1|00|$memory"	
-	#1-frei 0-belegt		BlockId	
+	   #1-frei 0-belegt		BlockId		Größe in KB
+
+#Array für Prozesse, die gerade den Speicher belegen, verweist auf einen Speicherblock
 arr=(processArr)
-#processArr[0]="00|a"
+#processArr[0]="99|a"
 
 
 #Auswahl der Realisierungskonzepte
