@@ -8,10 +8,10 @@ Index Memory
 array prozesse Pedro
 Index prozess
 0       0|00|0000000000|0000000000
-   von stelle 0 bis 1 = busy bit
-   von stelle 2-3 = block id
-   von stelle 4-13 = prozessname
-   von stelle 14-23 = prozessgröße
+   von stelle 0  = busy bit
+   von stelle 1-2 = block id
+   von stelle 3-12 = prozessname
+   von stelle 13-22 = prozessgröße
 
 
 

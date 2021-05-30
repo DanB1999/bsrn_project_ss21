@@ -49,9 +49,46 @@ function showProcesses {
 	done
 }
 function nextFit() {
-	processArr+=( "0|00|$1|$2" )
+	diff=-1
 	
-	showProcesses
+	if [ $lastBlock -eq 0 ]; then
+		for block in ${memArr[*]}
+		do
+			if [ ${block:0:1} -eq 1 ] && [ ${block:5} -ge $2 ]; then 
+				diff=$((${block:5}-$2))
+				blockId=${block:2:2}
+				blockCounter=$(($blockCounter-1))
+				break
+			fi
+		done
+		
+	else 
+		while [ $lastBlock -le  ${#memArr[*]} ]
+		do
+			block= ${memArr[lastBlock]}
+			if [ ${block:0:1} -eq 1 ] && [ ${block:5} -ge $2 ]; then 
+				diff=$((${block:5}-$2))
+				blockId=${block:2:2}
+				break
+			fi
+			$((lastBlock++))
+		done
+		blockCounter=$(($blockCounter-1))
+	fi	
+		#wenn die Blockgröße gleich der Prozessgröße ist, wird dessen Id dem Prozess zugeordnet
+		#ansonsten absteigender Wert von 99
+		if [ $diff -gt 0 ]; then
+			if [ $diff -eq 0 ]; then 
+				processArr[${#processArr[*]}]="$blockId|$1"
+			elif [ $diff -gt 0 ]; then 
+				processArr[${#processArr[*]}]="$blockCounter|$1"
+			fi
+			splitBlock $blockId $2 $blockCounter 
+			showMemoryUsage
+		else
+			echo "$(tput bold)$(tput setaf 1)Fehler: Kein ausreichend großer freier Block vorhanden!$(tput sgr0)"	
+		fi	
+		
 
 }
 #findet den freien Block mit der geringsten Speicher-Differenz zum Prozess
@@ -274,6 +311,7 @@ echo Sie haben $memory KB reserviert
 
 #legt die Id für neue Blöcke fest, wird runtergezählt, wenn neuer Block erstellt 
 blockCounter=99
+lastBlock=0
 
 #Array für Speicherblöcke
 arr=(memArr)
