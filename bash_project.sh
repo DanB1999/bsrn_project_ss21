@@ -28,7 +28,7 @@ function check2expn() {
 
 function createProcess()	{
 	if [ $concept = "ff" ]; then
-		firstFit
+		firstFit $1 $2
 	elif [ $concept = "bf" ]; then
 		bestFit $1 $2
 	elif [ $concept = "nf" ]; then
@@ -91,6 +91,24 @@ function nextFit() {
 		
 
 }
+#weist den ersten freien Block im Speicher dem Prozess zu
+function firstFit()	{
+	for block in ${memArr[*]}
+	do
+		if [ ${block:0:1} -eq 1 ] && [ ${block:5} -ge $2 ]; then
+			blockCounter=$(($blockCounter-1))
+			splitBlock ${block:2:2} $2 $blockCounter
+			if [ ${block:5} -gt $2 ]; then 
+				processArr[${#processArr[*]}]="$blockCounter|$1"
+				break
+			elif [ ${block:5} -eq $2 ]; then
+				processArr[${#processArr[*]}]="${block:2:2}|$1"
+				break
+			fi
+			showMemoryUsage			
+		fi
+	done
+}
 #findet den freien Block mit der geringsten Speicher-Differenz zum Prozess
 function bestFit() {
 	diff=-1 #diff bleibt '-1' wenn kein ausreichend großer, freier Block gefunden wird 
@@ -137,7 +155,7 @@ function bestFit() {
 	fi			
 }
 
-#guckt, ob vor oder hinter betreffendem freien Block noch freie Blöcke liegen, wenn ja, verbindet er sie 
+#prüft, ob vor oder hinter betreffendem freien Block noch freie Blöcke liegen, wenn ja, verbindet er sie 
 function putTogetherFreeBlocks()	{
 	zaehler1=0
 	zaehler2=0
@@ -269,18 +287,13 @@ function showMemoryUsage()	{
 				if [ ${memArr[$block]:2:2} -eq ${processArr[$process]:0:2} ]; then 
 					echo -e "belegt:\t${processArr[$process]:3}\t${memArr[$block]:5} KB" 
 				fi
-				#echo ${processArr[$process]}
+				#echo §process ${processArr[$process]}
 				
 			done
 		else
 			echo -e "frei:\t---\t${memArr[$block]:5} KB"	 
 		fi
-		echo $block ${memArr[$block]}
-	done
-	for process in ${!processArr[*]}
-	do
-		echo $process ${processArr[$process]}
-		
+		#echo $block ${memArr[$block]}
 	done
 	
 	echo "$(tput rev)$(tput setaf 7)|									$memory KB									|$(tput sgr0)"
@@ -288,12 +301,40 @@ function showMemoryUsage()	{
 
 function showInfo()		{
 	# 100/1024 = ca. 10%
-	echo Grad der externen Fragmentierung:
-	echo Größter/Kleinster freier Speicherblock: 
-	echo Gesamtzahl belegter/freier Blöcke im Adressraum:
+	sum=0
+	free=0
+	belegt=0
+	gIndex=0
+	for index in ${!memArr[*]}
+	do
+		if [ ${memArr[$index]:0:1} -eq 1 ]; then
+			free=$(($free+1))
+			if [ $index -ne $((${#memArr[*]}-1)) ]; then
+				sum=$(($sum+${memArr[$index]:5}))
+			fi
+			if [ ${memArr[$index]:5} -gt ${memArr[$gIndex]:5} ]; then
+				gIndex=$index
+			fi
+		elif [ ${memArr[$index]:0:1} -eq 0 ]; then
+			belegt=$(($belegt+1))
+		fi
+	done
+	sIndex=$gIndex
+	for index2 in ${!memArr[*]}
+	do
+		if [ ${memArr[$index2]:0:1} -eq 1 ] && [ ${memArr[$index2]:5} -lt ${memArr[$sIndex]:5} ]; then
+			sIndex=$index2
+		fi
+	done
+	
+	a=$(python -c "print($sum+0.0)")
+	b=$(python -c "print($memory+0.0)")
+	result=$(python -c "print($a/$b)")
+	echo Grad der externen Fragmentierung: $result %
+	echo Größter/Kleinster freier Speicherblock: ${memArr[$gIndex]:5} ${memArr[$sIndex]:5}
+	echo Gesamtzahl belegter/freier Blöcke im Adressraum: $belegt $free
 	showMemoryUsage
 }
-
 
 #Main-Part
 echo "$(tput bold)$(tput setaf 5)Hallo, das ist eine Simulator zur Visualisierung einer dynamischen Pationierung!"
