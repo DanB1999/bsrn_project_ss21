@@ -329,7 +329,7 @@ function showInfo()		{
 	
 	a=$(python -c "print($sum+0.0)")
 	b=$(python -c "print($memory+0.0)")
-	result=$(python -c "print($a/$b)")
+	result=$(python -c "print(($a/$b)*100.0)")
 	echo Grad der externen Fragmentierung: $result %
 	echo Größter/Kleinster freier Speicherblock: ${memArr[$gIndex]:5} ${memArr[$sIndex]:5}
 	echo Gesamtzahl belegter/freier Blöcke im Adressraum: $belegt $free
