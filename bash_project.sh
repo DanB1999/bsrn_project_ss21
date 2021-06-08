@@ -247,11 +247,10 @@ function deleteProcess()	{
 	for process in ${!processArr[*]}
 	do
 		if [[ "${processArr[$process]:3}" == "$1" ]]; then
-			counter5=$process
 			for block in ${!memArr[*]}
 			do
 				if [ ${processArr[$process]:0:2} -eq ${memArr[$block]:2:2} ]; then
-					unset 'processArr[$counter5]'
+					counter5=$process
 					memArr[$block]="1|${memArr[$block]:2:2}|${memArr[$block]:5}"
 					echo $(tput rev)$(tput setaf 2)Deleted!$(tput sgr0)	
 					putTogetherFreeBlocks ${memArr[$block]:2:2}
@@ -259,12 +258,18 @@ function deleteProcess()	{
 				fi
 			done 	 
 		fi
-		if [ $counter5 -ne -1 ] && [ $counter5 -lt ${#processArr[*]} ]; then
+		if [ $counter5 -ne -1 ] && [ $counter5 -lt $((${#processArr[*]}-1)) ]; then
 			processArr[$counter5]=${processArr[$(($counter5+1))]}
 			counter5=$(($counter5+1))
+			
 		fi
 	done
-	unset 'processArr[$((${#processArr[*]}-1))]'
+	if [ $counter5 -lt $((${#processArr[*]}-1)) ]; then
+		unset 'processArr[$((${#processArr[*]}-1))]'
+	else
+		unset 'processArr[$counter5]'
+	fi
+	
 	showMemoryUsage
 }
 
@@ -317,8 +322,12 @@ function showMemoryUsage()	{
 		if [ ${memArr[$block]:0:1} -eq 0 ]; then
 			for process in ${!processArr[*]}
 			do
-				if [ ${memArr[$block]:2:2} -eq ${processArr[$process]:0:2} ]; then 
-					echo -e "belegt:\t${processArr[$process]:3}\t${memArr[$block]:5} KB" 
+				if [ ${memArr[$block]:2:2} -eq ${processArr[$process]:0:2} ]; then
+					if [ $process -ne $((${#processArr[*]}-1)) ]; then 
+						echo -e "\033[47mbelegt: ${processArr[$process]:3}\t${memArr[$block]:5} KB \033[0m" 
+					else 
+						echo -e "\033[47;1mbelegt: ${processArr[$process]:3}\t${memArr[$block]:5} KB \033[0m"
+					fi 
 				fi
 				#echo §process ${processArr[$process]}
 				
@@ -326,10 +335,15 @@ function showMemoryUsage()	{
 		else
 			echo -e "frei:\t---\t${memArr[$block]:5} KB"	 
 		fi
-		#echo $block ${memArr[$block]}
+		echo $block ${memArr[$block]}
+	done
+	for process in ${!processArr[*]}
+	do
+		echo $process ${processArr[$process]}
+		
 	done
 	
-	echo "$(tput rev)$(tput setaf 7)|									$memory KB									|$(tput sgr0)"
+	#echo "$(tput rev)$(tput setaf 7)|									$memory KB									|$(tput sgr0)"
 }
 
 function showInfo()		{
