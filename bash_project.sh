@@ -33,6 +33,10 @@ function createProcess()	{
 		bestFit $1 $2
 	elif [ $concept = "nf" ]; then
 		nextFit $1 $2
+	
+	elif [ $concept = "rf" ]; then
+		randomFit $1 $2
+
 	else 
 		echo "FALSE"
 	fi
@@ -48,9 +52,38 @@ function showProcesses {
 		echo "$process"
 	done
 }
+function randomFit {
+	allocated=0
+	diff=-1
+	while [ $allocated -eq 0 ];
+	do
+		randomBlock=${memArr[$RANDOM % ${#memArr[@]} ]}
+		echo $randomBlock
+		if [ ${randomBlock:0:1} -eq 1 ] && [ ${randomBlock:5} -ge $2 ]; then 
+				diff=$((${randomBlock:5}-$2))
+				blockId=${randomBlock:2:2}
+				blockCounter=$(($blockCounter-1))
+				
+			if [ $diff -ge 0 ]; then
+				if [ $diff -eq 0 ]; then 
+					processArr[${#processArr[*]}]="$blockId|$1"
+					
+				elif [ $diff -gt 0 ]; then 
+					processArr[${#processArr[*]}]="$blockCounter|$1"
+					
+				fi
+				allocated=1
+				splitBlock $blockId $2 $blockCounter 
+				showMemoryUsage
+			else
+				echo "$(tput bold)$(tput setaf 1)Fehler: Kein ausreichend großer freier Block vorhanden!$(tput sgr0)"	
+			fi
+		fi	
+	done		
+}
+
 function nextFit() {
 	diff=-1
-	
 	if [ $lastBlock -eq 0 ]; then
 		for block in ${memArr[*]}
 		do
@@ -385,7 +418,7 @@ select option in $options; do
 		concept="nf"
 		break
 	elif [ "$option" = "Random" ]; then
-		concept="r"
+		concept="rf"
 		break
 	else 
 		echo Ungültige Eingabe! Bitte Wiederholen 
