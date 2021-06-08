@@ -40,11 +40,8 @@ function createProcess()	{
 	else 
 		echo "FALSE"
 	fi
-	
-		
-		
-		
 }
+
 function showProcesses {
 	echo "prozesse: "
 	for process in ${processArr[*]}
@@ -52,6 +49,7 @@ function showProcesses {
 		echo "$process"
 	done
 }
+
 function randomFit {
 	allocated=0
 	diff=-1
@@ -124,6 +122,7 @@ function nextFit() {
 		
 
 }
+
 #weist den ersten freien Block im Speicher dem Prozess zu
 function firstFit()	{
 	for block in ${memArr[*]}
@@ -142,6 +141,7 @@ function firstFit()	{
 		fi
 	done
 }
+
 #findet den freien Block mit der geringsten Speicher-Differenz zum Prozess
 function bestFit() {
 	diff=-1 #diff bleibt '-1' wenn kein ausreichend großer, freier Block gefunden wird 
@@ -340,6 +340,7 @@ function showMemoryUsage()	{
 	#echo "$(tput rev)$(tput setaf 7)|									$memory KB									|$(tput sgr0)"
 }
 
+#liest Block-Array aus, um Inforamtionen zum Grad d. externen Fragementierung, etc auszugeben
 function showInfo()		{
 	# 100/1024 = ca. 10%
 	sum=0
@@ -377,11 +378,13 @@ function showInfo()		{
 	showMemoryUsage
 }
 
-#Main-Part
+#-----------------------------------------Main-Part------------------------------------------
+
 echo "$(tput bold)$(tput setaf 5)Hallo, das ist eine Simulator zur Visualisierung einer dynamischen Pationierung!"
 echo "$(tput bold)$(tput setaf 2)Geben Sie die Größe des gewünschten Speicher ein:\n(in KB; Die Größe muss eine Zweierpotenz sein)$(tput sgr0)"
 read memory
 
+#prüft, ob der eingebene Speicher einer Zweierpotenz entspricht
 check2expn $memory
 while (($check != 0)); do
     echo "$(tput bold)$(tput setaf 1)Speicher ist keine 2er Potenz$(tput sgr0)"
@@ -425,6 +428,7 @@ select option in $options; do
 	elif [ "$option" = "Next_Fit" ]; then
 		concept="nf"
 		break
+	# Suche eines zufällig ausgewählten, ausreichend großen Blocks
 	elif [ "$option" = "Random" ]; then
 		concept="rf"
 		break
