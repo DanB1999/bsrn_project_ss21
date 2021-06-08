@@ -108,7 +108,7 @@ function nextFit() {
 	fi	
 		#wenn die Blockgröße gleich der Prozessgröße ist, wird dessen Id dem Prozess zugeordnet
 		#ansonsten absteigender Wert von 99
-		if [ $diff -gt 0 ]; then
+		if [ $diff -ge 0 ]; then
 			if [ $diff -eq 0 ]; then 
 				processArr[${#processArr[*]}]="$blockId|$1"
 			elif [ $diff -gt 0 ]; then 
@@ -175,7 +175,7 @@ function bestFit() {
 	
 	#wenn die Blockgröße gleich der Prozessgröße ist, wird dessen Id dem Prozess zugeordnet
 	#ansonsten absteigender Wert von 99
-	if [ $diff -gt 0 ]; then
+	if [ $diff -ge 0 ]; then
 		if [ $diff -eq 0 ]; then 
 			processArr[${#processArr[*]}]="$blockId|$1"
 		elif [ $diff -gt 0 ]; then 
