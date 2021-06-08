@@ -335,14 +335,8 @@ function showMemoryUsage()	{
 		else
 			echo -e "frei:\t---\t${memArr[$block]:5} KB"	 
 		fi
-		echo $block ${memArr[$block]}
+		#echo $block ${memArr[$block]}
 	done
-	for process in ${!processArr[*]}
-	do
-		echo $process ${processArr[$process]}
-		
-	done
-	
 	#echo "$(tput rev)$(tput setaf 7)|									$memory KB									|$(tput sgr0)"
 }
 
