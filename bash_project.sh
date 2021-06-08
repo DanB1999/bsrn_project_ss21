@@ -137,9 +137,9 @@ function firstFit()	{
 				processArr[${#processArr[*]}]="${block:2:2}|$1"
 				break
 			fi
-			showMemoryUsage			
 		fi
 	done
+	showMemoryUsage			
 }
 
 #findet den freien Block mit der geringsten Speicher-Differenz zum Prozess
@@ -372,16 +372,16 @@ function showInfo()		{
 	a=$(python -c "print($sum+0.0)")
 	b=$(python -c "print($memory+0.0)")
 	result=$(python -c "print(($a/$b)*100.0)")
-	echo Grad der externen Fragmentierung: $result %
-	echo Größter/Kleinster freier Speicherblock: ${memArr[$gIndex]:5} ${memArr[$sIndex]:5}
-	echo Gesamtzahl belegter/freier Blöcke im Adressraum: $belegt $free
+	echo -e "Grad der externen Fragmentierung:\t\t\t$result %"
+	echo -e "Größter/Kleinster freier Speicherblock:\t\t\t${memArr[$gIndex]:5} ${memArr[$sIndex]:5}"
+	echo -e "Gesamtzahl belegter/freier Blöcke im Adressraum:\t$belegt $free"
 	showMemoryUsage
 }
 
 #-----------------------------------------Main-Part------------------------------------------
 
 echo "$(tput bold)$(tput setaf 5)Hallo, das ist eine Simulator zur Visualisierung einer dynamischen Pationierung!"
-echo "$(tput bold)$(tput setaf 2)Geben Sie die Größe des gewünschten Speicher ein:\n(in KB; Die Größe muss eine Zweierpotenz sein)$(tput sgr0)"
+echo -e "$(tput bold)$(tput setaf 2)Geben Sie die Größe des gewünschten Speicher ein:\n(in KB; Die Größe muss eine Zweierpotenz sein)$(tput sgr0)"
 read memory
 
 #prüft, ob der eingebene Speicher einer Zweierpotenz entspricht
