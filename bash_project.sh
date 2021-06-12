@@ -418,7 +418,6 @@ select option in $options; do
 	# Suche beginnend mit Speicheranfang bis ausreichend großer Block gefunden
 	if [ "$option" = "First_Fit" ]; then
 		concept="ff"
-		createProcess
 		break
 	# sucht ab dem Anfang des Speicheradressraums Suche kleinsten Block, der ausreicht
 	elif [ "$option" = "Best_Fit" ]; then
