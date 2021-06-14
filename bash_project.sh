@@ -291,6 +291,7 @@ function splitBlock()	{
 				done
 			elif [ ${memArr[$index]:5} -eq $2 ]; then
 				memArr[$index]="0|$1|$2"
+				echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
 			else
 				echo "$(tput bold)$(tput setaf 1)Fehler: Kein ausreichend großer freier Block vorhanden!$(tput sgr0)"
 			fi
