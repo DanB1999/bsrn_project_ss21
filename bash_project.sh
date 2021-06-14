@@ -27,18 +27,26 @@ function check2expn() {
 }
 
 function createProcess()	{
-	if [ $concept = "ff" ]; then
-		firstFit $1 $2
-	elif [ $concept = "bf" ]; then
-		bestFit $1 $2
-	elif [ $concept = "nf" ]; then
-		nextFit $1 $2
+	re='^[0-9]+$'
+	if [[ $2 != "" ]]; then
+		if [[ $2 =~ $re ]];then
+			if [ $concept = "ff" ]; then
+				firstFit $1 $2
+			elif [ $concept = "bf" ]; then
+				bestFit $1 $2
+			elif [ $concept = "nf" ]; then
+				nextFit $1 $2
 	
-	elif [ $concept = "rf" ]; then
-		randomFit $1 $2
-
-	else 
-		echo "FALSE"
+			elif [ $concept = "rf" ]; then
+				randomFit $1 $2
+			else 
+				echo "FALSE"
+			fi
+		else
+			echo "$(tput bold)$(tput setaf 1)Fehler: Speichergröße ist keine Zahl!$(tput sgr0)"
+		fi
+	else
+		echo "$(tput bold)$(tput setaf 1)Fehler: 2. Argument nicht vorhanden!$(tput sgr0)"
 	fi
 }
 
@@ -258,6 +266,7 @@ function deleteProcess()	{
 					break
 				fi
 			done 	 
+		
 		fi
 		if [ $counter5 -ne -1 ] && [ $counter5 -lt $((${#processArr[*]}-1)) ]; then
 			processArr[$counter5]=${processArr[$(($counter5+1))]}
@@ -265,12 +274,17 @@ function deleteProcess()	{
 			
 		fi
 	done
-	if [ $counter5 -lt $((${#processArr[*]}-1)) ]; then
-		unset 'processArr[$((${#processArr[*]}-1))]'
+	if [ $counter5 -ne -1 ]; then
+		if [ $counter5 -lt $((${#processArr[*]}-1)) ]; then
+			unset 'processArr[$((${#processArr[*]}-1))]'
+		else
+			unset 'processArr[$counter5]'
+		fi
+		showMemoryUsage $index10
 	else
-		unset 'processArr[$counter5]'
+		echo "$(tput bold)$(tput setaf 1)Fehler: Prozess $1 existiert nicht $(tput sgr0)"
 	fi
-	showMemoryUsage $index10
+	
 }
 
 #belegt freien Block mit Prozess: Übergabeparameter: $BlockId $Prozessgröße $neue BlockId
@@ -441,7 +455,7 @@ select option in $options; do
 		concept="rf"
 		break
 	else 
-		echo Ungültige Eingabe! Bitte Wiederholen 
+		echo "$(tput bold)$(tput setaf 1)Fehler: ungültige Eingabe! Bitte wiederholen:$(tput sgr0)"	
 	fi
 done
 
@@ -453,25 +467,29 @@ echo -e "Prozess anlegen: \t\t\t$(tput rev)create [Prozessbezeichnung] [Größe 
 echo -e "Prozess beenden: \t\t\t$(tput rev)delete [Prozessbezeichnung] $(tput sgr0)"
 echo -e "Informationen zur Speicherbelegung: \t$(tput rev)info $(tput sgr0)"
 echo -e "Anwendung beenden: \t\t\t$(tput rev)end $(tput sgr0)"
-
+echo
 i=0
 while [ $i -eq 0 ]; do
-	echo
 	read command name size
-	if [ $command = "create" ]; then
-		createProcess $name $size
-		echo 
-	elif [ $command = "delete" ]; then
-		deleteProcess $name $size
-		echo 
-	elif [ $command = "info" ]; then
-		echo
-		showInfo
-	elif [ $command = "end" ]; then
-		echo Auf Wiedersehen!
-		exit
+	if [[ $command != "" ]]; then
+		if [ $command = "create" ]; then
+			createProcess $name $size
+			echo 
+		elif [ $command = "delete" ]; then
+			deleteProcess $name $size
+			echo 
+		elif [ $command = "info" ]; then
+			echo
+			showInfo
+		elif [ $command = "end" ]; then
+			echo Auf Wiedersehen!
+			exit
+		else
+			echo "$(tput bold)$(tput setaf 1)Fehler: Kommando nicht bekannt!$(tput sgr0)"	
+		fi
 	else
-		echo Kommando nicht bekannt!
+		echo "$(tput bold)$(tput setaf 1)Fehler: Eingabe erwartet!$(tput sgr0)" 
 	fi
+		
 done
 
