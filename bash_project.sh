@@ -252,6 +252,7 @@ function deleteProcess()	{
 				if [ ${processArr[$process]:0:2} -eq ${memArr[$block]:2:2} ]; then
 					counter5=$process
 					memArr[$block]="1|${memArr[$block]:2:2}|${memArr[$block]:5}"
+					index10=${memArr[$block]:2:2}
 					echo $(tput rev)$(tput setaf 2)Deleted!$(tput sgr0)	
 					putTogetherFreeBlocks ${memArr[$block]:2:2}
 					break
@@ -269,8 +270,7 @@ function deleteProcess()	{
 	else
 		unset 'processArr[$counter5]'
 	fi
-	
-	showMemoryUsage
+	showMemoryUsage $index10
 }
 
 #belegt freien Block mit Prozess: Übergabeparameter: $BlockId $Prozessgröße $neue BlockId
@@ -326,15 +326,23 @@ function showMemoryUsage()	{
 				if [ ${memArr[$block]:2:2} -eq ${processArr[$process]:0:2} ]; then
 					if [ $process -ne $((${#processArr[*]}-1)) ]; then 
 						echo -e "\033[47mbelegt: ${processArr[$process]:3}\t${memArr[$block]:5} KB \033[0m" 
-					else 
+					elif [[ $1 == "" ]]; then
 						echo -e "\033[47;1mbelegt: ${processArr[$process]:3}\t${memArr[$block]:5} KB \033[0m"
+					else 
+						echo -e "\033[47mbelegt: ${processArr[$process]:3}\t${memArr[$block]:5} KB \033[0m"
 					fi 
 				fi
 				#echo §process ${processArr[$process]}
 				
 			done
-		else
+		elif [[ $1 != "" ]]; then
+			if [ ${memArr[$block]:2:2} -eq $1 ]; then
+				echo -e "\033[1mfrei:\t---\t${memArr[$block]:5} KB \033[0m"
+			else
 			echo -e "frei:\t---\t${memArr[$block]:5} KB"	 
+			fi
+		else
+			echo -e "frei:\t---\t${memArr[$block]:5} KB"
 		fi
 		#echo $block ${memArr[$block]}
 	done
