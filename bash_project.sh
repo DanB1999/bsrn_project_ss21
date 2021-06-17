@@ -41,7 +41,7 @@ function createProcess()	{
 	exists=false
 	for process in ${!processArr[*]}
 	do
-		if [[ $1 =~ ${processArr[$process]:3} ]]; then
+		if [[ $1 == ${processArr[$process]:3} ]]; then
 			exists=true
 			echo "$(tput bold)$(tput setaf 1)Fehler: Prozess $1 existiert schon!$(tput sgr0)" 
 		fi		
