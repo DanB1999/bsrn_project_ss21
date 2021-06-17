@@ -1,8 +1,17 @@
 #!/bin/bash
 function check2expn() {
+	re='^[0-9]+$'
+	if [[ $1 = "" ]]; then 
+		echo "$(tput bold)$(tput setaf 1)Fehler: Eingabe erwartet!$(tput sgr0)" 
+		check=1
+		return
+	elif ! [[ $1 =~ $re ]]; then 
+		echo "$(tput bold)$(tput setaf 1)Fehler: Eingabe ist keine Zahl!$(tput sgr0)" 
+		check=1
+		return
+	fi
     local w=0
     local n=$1
-
     # zählt alle 1, bis n>0
     while ((n > 0)); do
         if (((n & 1) == 1)); then
@@ -13,7 +22,9 @@ function check2expn() {
         if ((w > 1)); then
             # wenn w > 1, ist n keine 2er-Potenz
             check=1
+			echo "$(tput bold)$(tput setaf 1)Speicher ist keine 2er Potenz$(tput sgr0)"
             break
+			return 1
         fi
 
         # nächstes bit wird überprüft
@@ -27,26 +38,35 @@ function check2expn() {
 }
 
 function createProcess()	{
-	re='^[0-9]+$'
-	if [[ $2 != "" ]]; then
-		if [[ $2 =~ $re ]];then
-			if [ $concept = "ff" ]; then
-				firstFit $1 $2
-			elif [ $concept = "bf" ]; then
-				bestFit $1 $2
-			elif [ $concept = "nf" ]; then
-				nextFit $1 $2
-	
-			elif [ $concept = "rf" ]; then
-				randomFit $1 $2
-			else 
-				echo "FALSE"
+	exists=false
+	for process in ${!processArr[*]}
+	do
+		if [[ $1 =~ ${processArr[$process]:3} ]]; then
+			exists=true
+			echo "$(tput bold)$(tput setaf 1)Fehler: Prozess $1 existiert schon!$(tput sgr0)" 
+		fi		
+	done
+	if [ $exists != "true" ]; then
+		re='^[0-9]+$'
+		if [[ $2 != "" ]]; then
+			if [[ $2 =~ $re ]];then
+				if [ $concept = "ff" ]; then
+					firstFit $1 $2
+				elif [ $concept = "bf" ]; then
+					bestFit $1 $2
+				elif [ $concept = "nf" ]; then
+					nextFit $1 $2
+				elif [ $concept = "rf" ]; then
+					randomFit $1 $2
+				else 
+					echo "FALSE"
+				fi
+			else
+				echo "$(tput bold)$(tput setaf 1)Fehler: Speichergröße ist keine Zahl!$(tput sgr0)"
 			fi
 		else
-			echo "$(tput bold)$(tput setaf 1)Fehler: Speichergröße ist keine Zahl!$(tput sgr0)"
+			echo "$(tput bold)$(tput setaf 1)Fehler: 2. Argument nicht vorhanden!$(tput sgr0)"
 		fi
-	else
-		echo "$(tput bold)$(tput setaf 1)Fehler: 2. Argument nicht vorhanden!$(tput sgr0)"
 	fi
 }
 
@@ -410,10 +430,8 @@ read memory
 #prüft, ob der eingebene Speicher einer Zweierpotenz entspricht
 check2expn $memory
 while (($check != 0)); do
-    echo "$(tput bold)$(tput setaf 1)Speicher ist keine 2er Potenz$(tput sgr0)"
-    echo -e "$(tput bold)$(tput setaf 2)Geben Sie den gewünschten Speicher ein:\n(in KB; Die Größe muss eine Zweierpotenz sein)$(tput sgr0)"
     read memory
-    check2expn $memory
+	check2expn $memory
 done
 echo Sie haben $memory KB reserviert
 
