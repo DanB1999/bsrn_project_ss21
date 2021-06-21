@@ -173,6 +173,7 @@ function firstFit()	{
 #findet den freien Block mit der geringsten Speicher-Differenz zum Prozess
 function bestFit() {
 	diff=-1 #diff bleibt '-1' wenn kein ausreichend großer, freier Block gefunden wird 
+	
 	#dursucht Array nach erstem freien Block mit entsprechender Differenz von Block und Prozess
 	for block in ${memArr[*]}
 	do
@@ -182,14 +183,10 @@ function bestFit() {
 			break
 		fi
 	done
-	sum=0
-	#summiert die Größe aller Prozesse auf 
+
 	#vergleicht alle Differenzen mit erster Differenz , wenn kleiner, dann wird diese überschrieben
 	for process in ${memArr[*]}
 	do
-		sum=$(($sum+${process:5}))
-		free=${process:0:1}
-		
 		if [ ${process:0:1} -eq 1 ] && [ ${process:5} -ge $2 ]; then
 				if [ $((${process:5}-$2)) -lt $diff ]; then
 					diff=$((${process:5}-$2))
@@ -199,7 +196,6 @@ function bestFit() {
 			continue 
 		fi 				
 	done
-	blockCounter=$(($blockCounter-1))
 	
 	#wenn die Blockgröße gleich der Prozessgröße ist, wird dessen Id dem Prozess zugeordnet
 	#ansonsten absteigender Wert von 99
@@ -207,6 +203,7 @@ function bestFit() {
 		if [ $diff -eq 0 ]; then 
 			processArr[${#processArr[*]}]="$blockId|$1"
 		elif [ $diff -gt 0 ]; then 
+			blockCounter=$(($blockCounter-1))
 			processArr[${#processArr[*]}]="$blockCounter|$1"
 		fi
 		splitBlock $blockId $2 $blockCounter 
