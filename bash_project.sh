@@ -321,32 +321,23 @@ function splitBlock()	{
 						memArr[$counter]=${memArr[$(($counter-1))]}
 						counter=$(($counter-1))
 					fi
-				
 				done
+				diffr=$((${memArr[$index]:5}-$2))
+				memArr[$(($index+1))]="1|$1|$diffr"
+				memArr[$index]="0|$3|$2"
+				echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
+				break
+				
 			elif [ ${memArr[$index]:5} -eq $2 ]; then
 				memArr[$index]="0|$1|$2"
 				echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
+				break
 			else
 				echo "$(tput bold)$(tput setaf 1)Fehler: Kein ausreichend großer freier Block vorhanden!$(tput sgr0)"
 			fi
 		else
 			continue
 		fi	
-	done
-	
-	for index3 in ${!memArr[*]}
-	do
-		if [ ${memArr[$index3]:2:2} -eq $1 ] && [ $counter -ne 0 ]; then
-			diffr=$((${memArr[$index3]:5}-$2))
-			memArr[$(($index3+1))]="1|$1|$diffr"
-			#putTogetherFreeBlocks ${memArr[$(($index3+1))]}
-			memArr[$index3]="0|$3|$2"
-			echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
-			break
-		else
-			continue	
-		fi
-			
 	done
 }
 
