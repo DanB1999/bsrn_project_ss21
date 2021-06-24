@@ -70,14 +70,6 @@ function createProcess()	{
 	fi
 }
 
-function showProcesses {
-	echo "prozesse: "
-	for process in ${processArr[*]}
-	do
-		echo "$process"
-	done
-}
-
 function randomFit {
 	allocated=0
 	diff=-1
@@ -277,7 +269,6 @@ function deleteProcess()	{
 				if [ ${processArr[$process]:0:2} -eq ${memArr[$block]:2:2} ]; then
 					counter5=$process
 					memArr[$block]="1|${memArr[$block]:2:2}|${memArr[$block]:5}"
-					index10=${memArr[$block]:2:2}
 					echo $(tput rev)$(tput setaf 2)Deleted!$(tput sgr0)	
 					putTogetherFreeBlocks ${memArr[$block]:2:2}
 					break
