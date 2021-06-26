@@ -137,9 +137,31 @@ function nextFit() {
 
 	else
 		getIndex $lastBlock
-		while [[ lastBlockIndex -le ${#memArr[*]} ]]; do
+		end=$lastBlockIndex
+		while [[ $lastBlockIndex -le ${#memArr[*]} ]]; do
 			echo $lastBlockIndex
 			echo ${#memArr[*]}
+			block=${memArr[$lastBlockIndex]}
+			if [ ${block:0:1} -eq 1 ] && [ ${block:5} -ge $2 ]; then
+				blockCounter=$(($blockCounter - 1))
+				splitBlock ${block:2:2} $2 $blockCounter
+				diff=0
+				if [ ${block:5} -gt $2 ]; then
+					processArr[${#processArr[*]}]="$blockCounter|$1"
+					firstStart=1
+					lastBlock=$block
+					break
+
+				elif [ ${block:5} -eq $2 ]; then
+					processArr[${#processArr[*]}]="${block:2:2}|$1"
+					firstStart=1
+					lastBlock=$block
+					break
+				fi
+			fi
+			lastBlockIndex=$(($lastBlockIndex + 1))
+		done
+		while [[ $lastBlockIndex -le $end ]] && [[ diff -lt 0 ]]; do
 			block=${memArr[$lastBlockIndex]}
 			if [ ${block:0:1} -eq 1 ] && [ ${block:5} -ge $2 ]; then
 				blockCounter=$(($blockCounter - 1))
@@ -179,7 +201,6 @@ function firstFit() {
 			if [ ${block:5} -gt $2 ]; then
 				processArr[${#processArr[*]}]="$blockCounter|$1"
 				break
-
 			elif [ ${block:5} -eq $2 ]; then
 				processArr[${#processArr[*]}]="${block:2:2}|$1"
 				break
