@@ -77,7 +77,6 @@ function showProcesses {
 }
 
 function randomFit {
-	allocated=0
 	diff=-1
 	while [ $allocated -eq 0 ]; do
 		randomBlock=${memArr[$RANDOM % ${#memArr[@]}]}
@@ -103,45 +102,91 @@ function randomFit {
 		fi
 	done
 }
-
+function getIndex() {
+	for i in "${!memArr[@]}"; do
+		if [[ "${memArr[$i]}" = "${lastBlock}" ]]; then
+			lastBlockIndex= ${!memArr[$i]}
+			lastBlockIndex= $(($lastBlockIndex + 1))
+			echo $lastBlockIndex
+		fi
+	done
+}
 function nextFit() {
 	diff=-1
-	if [ $lastBlock -eq 0 ]; then
+	if [[ firstStart -eq 0 ]]; then
 		for block in ${memArr[*]}; do
 			if [ ${block:0:1} -eq 1 ] && [ ${block:5} -ge $2 ]; then
-				diff=$((${block:5} - $2))
-				blockId=${block:2:2}
 				blockCounter=$(($blockCounter - 1))
-				lastBlock=$blockCounter
-				break
+				splitBlock ${block:2:2} $2 $blockCounter
+				diff=0
+
+				if [ ${block:5} -gt $2 ]; then
+					processArr[${#processArr[*]}]="$blockCounter|$1"
+					firstStart=1
+					lastBlock=$block
+					break
+
+				elif [ ${block:5} -eq $2 ]; then
+					processArr[${#processArr[*]}]="${block:2:2}|$1"
+					firstStart=1
+					lastBlock=$block
+					break
+				fi
 			fi
 		done
 
 	else
-		while [ $lastBlock -le ${#memArr[*]} ]; do
-			block= ${memArr[$lastBlock]}
+		getIndex $lastBlock
+		end=$lastBlockIndex
+		while [[ $lastBlockIndex -le ${#memArr[*]} ]]; do
+			echo $lastBlockIndex
+			echo ${#memArr[*]}
+			block=${memArr[$lastBlockIndex]}
 			if [ ${block:0:1} -eq 1 ] && [ ${block:5} -ge $2 ]; then
-				diff=$((${block:5} - $2))
-				blockId=${block:2:2}
-				break
+				blockCounter=$(($blockCounter - 1))
+				splitBlock ${block:2:2} $2 $blockCounter
+				diff=0
+				if [ ${block:5} -gt $2 ]; then
+					processArr[${#processArr[*]}]="$blockCounter|$1"
+					firstStart=1
+					lastBlock=$block
+					break
+
+				elif [ ${block:5} -eq $2 ]; then
+					processArr[${#processArr[*]}]="${block:2:2}|$1"
+					firstStart=1
+					lastBlock=$block
+					break
+				fi
 			fi
+			lastBlockIndex=$(($lastBlockIndex + 1))
 		done
-		blockCounter=$(($blockCounter - 1))
+		while [[ $lastBlockIndex -le $end ]] && [[ diff -lt 0 ]]; do
+			block=${memArr[$lastBlockIndex]}
+			if [ ${block:0:1} -eq 1 ] && [ ${block:5} -ge $2 ]; then
+				blockCounter=$(($blockCounter - 1))
+				splitBlock ${block:2:2} $2 $blockCounter
+				diff=0
+				if [ ${block:5} -gt $2 ]; then
+					processArr[${#processArr[*]}]="$blockCounter|$1"
+					firstStart=1
+					lastBlock=$block
+					break
+
+				elif [ ${block:5} -eq $2 ]; then
+					processArr[${#processArr[*]}]="${block:2:2}|$1"
+					firstStart=1
+					lastBlock=$block
+					break
+				fi
+			fi
+			lastBlockIndex=$(($lastBlockIndex + 1))
+		done
 	fi
-	#wenn die Blockgröße gleich der Prozessgröße ist, wird dessen Id dem Prozess zugeordnet
-	#ansonsten absteigender Wert von 99
-	if [ $diff -ge 0 ]; then
-		if [ $diff -eq 0 ]; then
-			processArr[${#processArr[*]}]="$blockId|$1"
-		elif [ $diff -gt 0 ]; then
-			processArr[${#processArr[*]}]="$blockCounter|$1"
-		fi
-		splitBlock $blockId $2 $blockCounter
-		showMemoryUsage
-	else
+	if [ $diff -lt 0 ]; then
 		echo "$(tput bold)$(tput setaf 1)Fehler: Kein ausreichend großer freier Block vorhanden!$(tput sgr0)"
 	fi
-
+	showMemoryUsage
 }
 
 #weist den ersten freien Block im Speicher dem Prozess zu
@@ -156,7 +201,6 @@ function firstFit() {
 			if [ ${block:5} -gt $2 ]; then
 				processArr[${#processArr[*]}]="$blockCounter|$1"
 				break
-
 			elif [ ${block:5} -eq $2 ]; then
 				processArr[${#processArr[*]}]="${block:2:2}|$1"
 				break
@@ -172,7 +216,6 @@ function firstFit() {
 #findet den freien Block mit der geringsten Speicher-Differenz zum Prozess
 function bestFit() {
 	diff=-1 #diff bleibt '-1' wenn kein ausreichend großer, freier Block gefunden wird
-
 	#dursucht Array nach erstem freien Block mit entsprechender Differenz von Block und Prozess
 	for block in ${memArr[*]}; do
 		if [ ${block:0:1} -eq 1 ] && [ ${block:5} -ge $2 ]; then
@@ -181,9 +224,13 @@ function bestFit() {
 			break
 		fi
 	done
-
+	sum=0
+	#summiert die Größe aller Prozesse auf
 	#vergleicht alle Differenzen mit erster Differenz , wenn kleiner, dann wird diese überschrieben
 	for process in ${memArr[*]}; do
+		sum=$(($sum + ${process:5}))
+		free=${process:0:1}
+
 		if [ ${process:0:1} -eq 1 ] && [ ${process:5} -ge $2 ]; then
 			if [ $((${process:5} - $2)) -lt $diff ]; then
 				diff=$((${process:5} - $2))
@@ -193,6 +240,7 @@ function bestFit() {
 			continue
 		fi
 	done
+	blockCounter=$(($blockCounter - 1))
 
 	#wenn die Blockgröße gleich der Prozessgröße ist, wird dessen Id dem Prozess zugeordnet
 	#ansonsten absteigender Wert von 99
@@ -200,7 +248,6 @@ function bestFit() {
 		if [ $diff -eq 0 ]; then
 			processArr[${#processArr[*]}]="$blockId|$1"
 		elif [ $diff -gt 0 ]; then
-			blockCounter=$(($blockCounter - 1))
 			processArr[${#processArr[*]}]="$blockCounter|$1"
 		fi
 		splitBlock $blockId $2 $blockCounter
@@ -270,6 +317,7 @@ function deleteProcess() {
 				if [ ${processArr[$process]:0:2} -eq ${memArr[$block]:2:2} ]; then
 					counter5=$process
 					memArr[$block]="1|${memArr[$block]:2:2}|${memArr[$block]:5}"
+					index10=${memArr[$block]:2:2}
 					echo $(tput rev)$(tput setaf 2)Deleted!$(tput sgr0)
 					putTogetherFreeBlocks ${memArr[$block]:2:2}
 					break
@@ -308,23 +356,31 @@ function splitBlock() {
 						memArr[$counter]=${memArr[$(($counter - 1))]}
 						counter=$(($counter - 1))
 					fi
-				done
-				diffr=$((${memArr[$index]:5} - $2))
-				memArr[$(($index + 1))]="1|$1|$diffr"
-				memArr[$index]="0|$3|$2"
-				echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
-				break
 
+				done
 			elif [ ${memArr[$index]:5} -eq $2 ]; then
 				memArr[$index]="0|$1|$2"
 				echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
-				break
 			else
 				echo "$(tput bold)$(tput setaf 1)Fehler: Kein ausreichend großer freier Block vorhanden!$(tput sgr0)"
 			fi
 		else
 			continue
 		fi
+	done
+
+	for index3 in ${!memArr[*]}; do
+		if [ ${memArr[$index3]:2:2} -eq $1 ] && [ $counter -ne 0 ]; then
+			diffr=$((${memArr[$index3]:5} - $2))
+			memArr[$(($index3 + 1))]="1|$1|$diffr"
+			#putTogetherFreeBlocks ${memArr[$(($index3+1))]}
+			memArr[$index3]="0|$3|$2"
+			echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
+			break
+		else
+			continue
+		fi
+
 	done
 }
 
@@ -397,7 +453,7 @@ function showInfo() {
 
 #-----------------------------------------Main-Part------------------------------------------
 
-echo "$(tput bold)$(tput setaf 5)Hallo, das ist eine Simulator zur Visualisierung einer dynamischen Pationierung!"
+echo "$(tput bold)$(tput setaf 5)Hallo, das ist ein Simulator zur Visualisierung einer dynamischen Partitionierung!"
 echo -e "$(tput bold)$(tput setaf 2)Geben Sie die Größe des gewünschten Speicher ein:\n(in KB; Die Größe muss eine Zweierpotenz sein)$(tput sgr0)"
 read memory
 
@@ -412,6 +468,8 @@ echo Sie haben $memory KB reserviert
 #legt die Id für neue Blöcke fest, wird runtergezählt, wenn neuer Block erstellt
 blockCounter=99
 lastBlock=0
+firstStart=0
+lastBlockIndex=0
 
 #Array für Speicherblöcke
 arr=(memArr)
