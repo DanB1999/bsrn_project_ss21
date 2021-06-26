@@ -453,7 +453,7 @@ function showInfo() {
 
 #-----------------------------------------Main-Part------------------------------------------
 
-echo "$(tput bold)$(tput setaf 5)Hallo, das ist eine Simulator zur Visualisierung einer dynamischen Pationierung!"
+echo "$(tput bold)$(tput setaf 5)Hallo, das ist ein Simulator zur Visualisierung einer dynamischen Partitionierung!"
 echo -e "$(tput bold)$(tput setaf 2)Geben Sie die Größe des gewünschten Speicher ein:\n(in KB; Die Größe muss eine Zweierpotenz sein)$(tput sgr0)"
 read memory
 
