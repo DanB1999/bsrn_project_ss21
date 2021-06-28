@@ -76,6 +76,7 @@ function createProcess() {
 
 #zufällige Zuweisung der Prozesse 
 function randomFit {
+	allocated=0
 	diff=-1
 	while [ $allocated -eq 0 ]; do
 		randomBlock=${memArr[$RANDOM % ${#memArr[@]}]}
