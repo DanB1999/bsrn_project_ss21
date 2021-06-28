@@ -1,5 +1,6 @@
 # BsRn Projekt im SS21 - Simulator zur Visualisierung der dynamische Partitionierung
 
+Abgegeben von Pedro Martin Moralejo und Daniel Bilic
 <h3 style="text-color:#ff0000">Abgabefrist bis 28.6!!!</h3>
 
 ## Anforderungen
