@@ -69,13 +69,6 @@ function createProcess() {
 	fi
 }
 
-function showProcesses {
-	echo "prozesse: "
-	for process in ${processArr[*]}; do
-		echo "$process"
-	done
-}
-
 function randomFit {
 	diff=-1
 	while [ $allocated -eq 0 ]; do
@@ -102,91 +95,68 @@ function randomFit {
 		fi
 	done
 }
-function getIndex() {
-	for i in "${!memArr[@]}"; do
-		if [[ "${memArr[$i]}" = "${lastBlock}" ]]; then
-			lastBlockIndex= ${!memArr[$i]}
-			lastBlockIndex= $(($lastBlockIndex + 1))
-			echo $lastBlockIndex
+
+function nextFit()	{
+	for index in ${!memArr[*]}; do
+		found=0
+		diff=-1
+		if [ ${#processArr[*]} -ne 0 ]; then #falls bereits Prozesse existieren
+			#speichert Index von letztem Prozess
+			if [[ ${processArr[$((${#processArr[*]}-1))]:0:2} -eq ${memArr[$index]:2:2} ]]; then
+				ProcessIndex=$index
+			fi
+			if [ $index -ne 0 ] && [ $index -gt $ProcessIndex ]; then
+				if [ ${memArr[$index]:5} -ge $2 ] && [ ${memArr[$index]:0:1} -eq 1 ]; then
+					splitBlock ${memArr[$index]:2:2} $2 $blockCounter
+					found=1
+					diff=0
+					if [ ${memArr[$index]:5} -gt $2 ]; then
+						processArr[${#processArr[*]}]="$blockCounter|$1"
+					elif [ ${memArr[$index]:5} -eq $2 ]; then
+						processArr[${#processArr[*]}]="${memArr[$index]:2:2}|$1"
+					fi
+					break
+				fi			
+			fi
+		else
+			#noch keine Prozesse vorhanden
+			if [ ${memArr[$index]:5} -ge $2 ] && [ ${memArr[$index]:0:1} -eq 1 ]; then
+				splitBlock ${memArr[$index]:2:2} $2 $blockCounter
+				found=1
+				diff=0
+				if [ ${memArr[$index]:5} -gt $2 ]; then
+					processArr[${#processArr[*]}]="$blockCounter|$1"
+				elif [ ${memArr[$index]:5} -eq $2 ]; then
+					processArr[${#processArr[*]}]="${memArr[$index]:2:2}|$1"
+				fi
+				break
+			fi		
 		fi
 	done
-}
-function nextFit() {
-	diff=-1
-	if [[ firstStart -eq 0 ]]; then
-		for block in ${memArr[*]}; do
-			if [ ${block:0:1} -eq 1 ] && [ ${block:5} -ge $2 ]; then
-				blockCounter=$(($blockCounter - 1))
-				splitBlock ${block:2:2} $2 $blockCounter
-				diff=0
-
-				if [ ${block:5} -gt $2 ]; then
-					processArr[${#processArr[*]}]="$blockCounter|$1"
-					firstStart=1
-					lastBlock=$block
-					break
-
-				elif [ ${block:5} -eq $2 ]; then
-					processArr[${#processArr[*]}]="${block:2:2}|$1"
-					firstStart=1
-					lastBlock=$block
+	#Durchsucht das Array von "vorne", falls kein passender Block hinter letztem Prozess gefunden wurde
+	if [ $found -ne 1 ]; then
+		for index2 in ${!memArr[*]}; do
+			if [ $index2 -lt $ProcessIndex ]; then
+				if [ ${memArr[$index2]:5} -ge $2 ] && [ ${memArr[$index2]:0:1} -eq 1 ]; then
+					echo ${memArr[$index2]:2:2} $2 $blockCounter
+					splitBlock ${memArr[$index2]:2:2} $2 $blockCounter
+					diff=0
+					if [ ${memArr[$index2]:5} -gt $2 ]; then
+						processArr[${#processArr[*]}]="$blockCounter|$1"
+					elif [ ${memArr[$index2]:5} -eq $2 ]; then
+						processArr[${#processArr[*]}]="${memArr[$index2]:2:2}|$1"
+					fi
 					break
 				fi
 			fi
 		done
-
-	else
-		getIndex $lastBlock
-		end=$lastBlockIndex
-		while [[ $lastBlockIndex -le ${#memArr[*]} ]]; do
-			echo $lastBlockIndex
-			echo ${#memArr[*]}
-			block=${memArr[$lastBlockIndex]}
-			if [ ${block:0:1} -eq 1 ] && [ ${block:5} -ge $2 ]; then
-				blockCounter=$(($blockCounter - 1))
-				splitBlock ${block:2:2} $2 $blockCounter
-				diff=0
-				if [ ${block:5} -gt $2 ]; then
-					processArr[${#processArr[*]}]="$blockCounter|$1"
-					firstStart=1
-					lastBlock=$block
-					break
-
-				elif [ ${block:5} -eq $2 ]; then
-					processArr[${#processArr[*]}]="${block:2:2}|$1"
-					firstStart=1
-					lastBlock=$block
-					break
-				fi
-			fi
-			lastBlockIndex=$(($lastBlockIndex + 1))
-		done
-		while [[ $lastBlockIndex -le $end ]] && [[ diff -lt 0 ]]; do
-			block=${memArr[$lastBlockIndex]}
-			if [ ${block:0:1} -eq 1 ] && [ ${block:5} -ge $2 ]; then
-				blockCounter=$(($blockCounter - 1))
-				splitBlock ${block:2:2} $2 $blockCounter
-				diff=0
-				if [ ${block:5} -gt $2 ]; then
-					processArr[${#processArr[*]}]="$blockCounter|$1"
-					firstStart=1
-					lastBlock=$block
-					break
-
-				elif [ ${block:5} -eq $2 ]; then
-					processArr[${#processArr[*]}]="${block:2:2}|$1"
-					firstStart=1
-					lastBlock=$block
-					break
-				fi
-			fi
-			lastBlockIndex=$(($lastBlockIndex + 1))
-		done
-	fi
+	fi 
 	if [ $diff -lt 0 ]; then
 		echo "$(tput bold)$(tput setaf 1)Fehler: Kein ausreichend großer freier Block vorhanden!$(tput sgr0)"
 	fi
+	blockCounter=$(($blockCounter - 1))
 	showMemoryUsage
+
 }
 
 #weist den ersten freien Block im Speicher dem Prozess zu
@@ -356,31 +326,22 @@ function splitBlock() {
 						memArr[$counter]=${memArr[$(($counter - 1))]}
 						counter=$(($counter - 1))
 					fi
-
 				done
+				diffr=$((${memArr[$index]:5} - $2))
+				memArr[$(($index + 1))]="1|$1|$diffr"
+				memArr[$index]="0|$3|$2"
+				echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
+				break
 			elif [ ${memArr[$index]:5} -eq $2 ]; then
 				memArr[$index]="0|$1|$2"
 				echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
+				break
 			else
 				echo "$(tput bold)$(tput setaf 1)Fehler: Kein ausreichend großer freier Block vorhanden!$(tput sgr0)"
 			fi
 		else
 			continue
 		fi
-	done
-
-	for index3 in ${!memArr[*]}; do
-		if [ ${memArr[$index3]:2:2} -eq $1 ] && [ $counter -ne 0 ]; then
-			diffr=$((${memArr[$index3]:5} - $2))
-			memArr[$(($index3 + 1))]="1|$1|$diffr"
-			#putTogetherFreeBlocks ${memArr[$(($index3+1))]}
-			memArr[$index3]="0|$3|$2"
-			echo $(tput rev)$(tput setaf 2)Created!$(tput sgr0)
-			break
-		else
-			continue
-		fi
-
 	done
 }
 
@@ -467,9 +428,6 @@ echo Sie haben $memory KB reserviert
 
 #legt die Id für neue Blöcke fest, wird runtergezählt, wenn neuer Block erstellt
 blockCounter=99
-lastBlock=0
-firstStart=0
-lastBlockIndex=0
 
 #Array für Speicherblöcke
 arr=(memArr)
