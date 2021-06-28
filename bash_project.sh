@@ -71,6 +71,7 @@ function createProcess() {
 
 function randomFit {
 	diff=-1
+	allocated=0
 	while [ $allocated -eq 0 ]; do
 		randomBlock=${memArr[$RANDOM % ${#memArr[@]}]}
 		if [ ${randomBlock:0:1} -eq 1 ] && [ ${randomBlock:5} -ge $2 ]; then
@@ -96,13 +97,13 @@ function randomFit {
 	done
 }
 
-function nextFit()	{
+function nextFit() {
 	for index in ${!memArr[*]}; do
 		found=0
 		diff=-1
 		if [ ${#processArr[*]} -ne 0 ]; then #falls bereits Prozesse existieren
 			#speichert Index von letztem Prozess
-			if [[ ${processArr[$((${#processArr[*]}-1))]:0:2} -eq ${memArr[$index]:2:2} ]]; then
+			if [[ ${processArr[$((${#processArr[*]} - 1))]:0:2} -eq ${memArr[$index]:2:2} ]]; then
 				ProcessIndex=$index
 			fi
 			if [ $index -ne 0 ] && [ $index -gt $ProcessIndex ]; then
@@ -116,7 +117,7 @@ function nextFit()	{
 						processArr[${#processArr[*]}]="${memArr[$index]:2:2}|$1"
 					fi
 					break
-				fi			
+				fi
 			fi
 		else
 			#noch keine Prozesse vorhanden
@@ -130,7 +131,7 @@ function nextFit()	{
 					processArr[${#processArr[*]}]="${memArr[$index]:2:2}|$1"
 				fi
 				break
-			fi		
+			fi
 		fi
 	done
 	#Durchsucht das Array von "vorne", falls kein passender Block hinter letztem Prozess gefunden wurde
@@ -150,7 +151,7 @@ function nextFit()	{
 				fi
 			fi
 		done
-	fi 
+	fi
 	if [ $diff -lt 0 ]; then
 		echo "$(tput bold)$(tput setaf 1)Fehler: Kein ausreichend großer freier Block vorhanden!$(tput sgr0)"
 	fi
