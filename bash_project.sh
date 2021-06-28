@@ -76,7 +76,6 @@ function createProcess() {
 
 #zufällige Zuweisung der Prozesse
 function randomFit {
-	allocated=0
 	diff=-1
 	allocated=0
 	while [ $allocated -eq 0 ]; do
