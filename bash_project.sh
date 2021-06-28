@@ -443,6 +443,8 @@ function showInfo() {
 	a=$(python -c "print($sum+0.0)")
 	b=$(python -c "print($memory+0.0)")
 	result=$(python -c "print(($a/$b)*100.0)") 	#berechnte den Grad der externen Fragmentierung
+	echo -e "Realisierungskonzept: $(tput bold)$(tput setaf 4)$option $(tput sgr0)\t\tSpeichergröße: $(tput bold)$(tput setaf 4)$memory KB $(tput sgr0)"
+	echo
 	echo -e "Grad der externen Fragmentierung:\t\t\t$result %"
 	echo -e "Größter/Kleinster freier Speicherblock:\t\t\t${memArr[$gIndex]:5} ${memArr[$sIndex]:5}"
 	echo -e "Gesamtzahl belegter/freier Blöcke im Adressraum:\t$belegt $free"
@@ -461,7 +463,7 @@ while (($check != 0)); do
 	read memory
 	check2expn $memory
 done
-echo Sie haben $memory KB reserviert
+echo -e "Sie haben $(tput bold)$(tput setaf 4)$memory KB$(tput sgr0) reserviert"
 
 #legt die Id für neue Blöcke fest, wird runtergezählt, wenn neuer Block erstellt
 blockCounter=99
@@ -505,7 +507,7 @@ done
 
 #Menü
 echo
-echo $(tput bold)$(tput setaf 2)$(tput smul)Liste der möglichen Befehle:$(tput sgr0)
+echo -e "$(tput bold)$(tput setaf 2)$(tput smul)Liste der möglichen Befehle:$(tput sgr0)\t\tRealisierungskonzept: $(tput bold)$(tput setaf 4)$option $(tput sgr0)"
 echo
 echo -e "Prozess anlegen: \t\t\t$(tput rev)create [Prozessbezeichnung] [Größe in KB]$(tput sgr0)"
 echo -e "Prozess beenden: \t\t\t$(tput rev)delete [Prozessbezeichnung] $(tput sgr0)"
