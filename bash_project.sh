@@ -105,16 +105,12 @@ function randomFit {
 
 #findet den nöchsten freien Speicherblock nach dem letzten Prozess
 function nextFit() {
+	found=0
+	diff=-1
 	for index in ${!memArr[*]}; do
-		found=0
-		diff=-1
-		if [ ${#processArr[*]} -ne 0 ]; then #falls bereits Prozesse existieren
-			#speichert Index von letztem Prozess
-			if [[ ${processArr[$((${#processArr[*]} - 1))]:0:2} -eq ${memArr[$index]:2:2} ]]; then
-				ProcessIndex=$index
-			fi
+		if [ ${#processArr[*]} -ne 0 ]; then #falls bereits Prozesse existieren			
 			#dursucht Array ab letztem Prozess
-			if [ $index -ne 0 ] && [ $index -gt $ProcessIndex ]; then
+			if [ $ProcessIndex -ne -1 ] && [ $index -gt $ProcessIndex ]; then
 				if [ ${memArr[$index]:5} -ge $2 ] && [ ${memArr[$index]:0:1} -eq 1 ]; then
 					splitBlock ${memArr[$index]:2:2} $2 $blockCounter
 					found=1
@@ -124,9 +120,13 @@ function nextFit() {
 					elif [ ${memArr[$index]:5} -eq $2 ]; then
 						processArr[${#processArr[*]}]="${memArr[$index]:2:2}|$1"
 					fi
+					if [[ ${processArr[$((${#processArr[*]} - 1))]:0:2} -eq ${memArr[$index]:2:2} ]]; then
+						ProcessIndex=$index
+					fi
 					break
 				fi
 			fi
+	
 		else #noch keine Prozesse vorhanden
 			if [ ${memArr[$index]:5} -ge $2 ] && [ ${memArr[$index]:0:1} -eq 1 ]; then
 				splitBlock ${memArr[$index]:2:2} $2 $blockCounter
@@ -137,8 +137,13 @@ function nextFit() {
 				elif [ ${memArr[$index]:5} -eq $2 ]; then
 					processArr[${#processArr[*]}]="${memArr[$index]:2:2}|$1"
 				fi
+				if [[ ${processArr[$((${#processArr[*]} - 1))]:0:2} -eq ${memArr[$index]:2:2} ]]; then
+					ProcessIndex=$index
+				fi
 				break
+				
 			fi
+			
 		fi
 	done
 	#Durchsucht das Array von "vorne", falls kein passender Block hinter letztem Prozess gefunden wurde
@@ -153,6 +158,9 @@ function nextFit() {
 						processArr[${#processArr[*]}]="$blockCounter|$1"
 					elif [ ${memArr[$index2]:5} -eq $2 ]; then
 						processArr[${#processArr[*]}]="${memArr[$index2]:2:2}|$1"
+					fi
+					if [[ ${processArr[$((${#processArr[*]} - 1))]:0:2} -eq ${memArr[$index]:2:2} ]]; then
+						ProcessIndex=$index
 					fi
 					break
 				fi
